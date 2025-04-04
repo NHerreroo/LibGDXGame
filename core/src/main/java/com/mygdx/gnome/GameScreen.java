@@ -1,6 +1,7 @@
 package com.mygdx.gnome;
 
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.viewport.FillViewport;
@@ -47,6 +48,7 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         viewport = new FillViewport(virtualWidth, VIRTUAL_HEIGHT, camera);
         camera.position.set(virtualWidth / 2f, VIRTUAL_HEIGHT / 2f, 0);
+        camera.zoom = 0.75f;
         camera.update();
 
         hudCamera = new OrthographicCamera();
@@ -59,15 +61,17 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        Gdx.gl.glClearColor(1f, 0f, 0f, 1f); // RGBA (1,0,0,1) = rojo sólido
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         // Input
         if (Gdx.input.isTouched()) {
             if (!isTouching) {
                 isTouching = true;
                 touchOrigin.set(Gdx.input.getX(), Gdx.input.getY());
-                viewport.unproject(touchOrigin);
+                hudViewport.unproject(touchOrigin);
             }
             touchCurrent.set(Gdx.input.getX(), Gdx.input.getY());
-            viewport.unproject(touchCurrent);
+            hudViewport.unproject(touchCurrent);
         } else {
             isTouching = false;
         }
@@ -94,7 +98,7 @@ public class GameScreen implements Screen {
         batch.end();
 
         // Dibujar joystick en HUD
-        batch.setProjectionMatrix(viewport.getCamera().combined);
+        batch.setProjectionMatrix(hudCamera.combined);
         if (isTouching) {
             batch.begin();
             float bgSize = 100f;
