@@ -31,6 +31,9 @@ public class Main extends Game {
         assetManager.load("GNOME/Player/1.png", Texture.class);
         assetManager.load("GNOME/Player/1.png", Texture.class);
 
+
+        assetManager.load("GNOME/Snail/1.png", Texture.class);
+
         assetManager.finishLoading();
 
         this.setScreen(new MainMenuScreen(this));

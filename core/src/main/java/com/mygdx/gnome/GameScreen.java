@@ -10,6 +10,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GameScreen implements Screen {
     final Main game;
     OrthographicCamera camera;
@@ -22,6 +25,8 @@ public class GameScreen implements Screen {
 
     Player player;
 
+    Spawner spawner;
+
     public static final float VIRTUAL_HEIGHT = 720f;
     public float virtualWidth;
 
@@ -32,6 +37,11 @@ public class GameScreen implements Screen {
     OrthographicCamera hudCamera;
     Viewport hudViewport;
 
+    Texture bulletTexture;
+    List<Bullet> bullets = new ArrayList<>();
+    float shootCooldown = 0f;
+    float shootInterval = 0.5f; // dispara cada 1 segundo
+
 
     public GameScreen(final Main gam) {
         this.game = gam;
@@ -39,8 +49,12 @@ public class GameScreen implements Screen {
 
         mapTexture = game.assetManager.get("GNOME/Map/Map.png", Texture.class);
         Texture playerTexture = game.assetManager.get("GNOME/Player/1.png", Texture.class);
+        Texture snailTexture = game.assetManager.get("GNOME/Snail/1.png", Texture.class);
+
         touchBg = game.assetManager.get("GNOME/Player/1.png", Texture.class);
         touchKnob = game.assetManager.get("GNOME/Player/1.png", Texture.class);
+        bulletTexture = new Texture("GNOME/Player/1.png");
+
 
         float mapAspectRatio = (float) mapTexture.getWidth() / mapTexture.getHeight();
         virtualWidth = VIRTUAL_HEIGHT * mapAspectRatio;
@@ -57,6 +71,7 @@ public class GameScreen implements Screen {
         hudCamera.update();
 
         player = new Player(playerTexture, virtualWidth / 2f, VIRTUAL_HEIGHT / 2f);
+        spawner = new Spawner(snailTexture, virtualWidth, VIRTUAL_HEIGHT);
     }
 
     @Override
@@ -76,7 +91,7 @@ public class GameScreen implements Screen {
             isTouching = false;
         }
 
-        // Movimiento del jugador
+        // Movimiento del player
         Vector2 direction = new Vector2();
         if (isTouching) {
             direction.set(touchCurrent).sub(touchOrigin);
@@ -86,6 +101,36 @@ public class GameScreen implements Screen {
             }
         }
 
+        //disapro
+        shootCooldown -= delta;
+        if (shootCooldown <= 0f && !spawner.getSnails().isEmpty()) {
+            // Buscar el más cercano
+            Snail closest = null;
+            float minDist = Float.MAX_VALUE;
+
+            for (Snail snail : spawner.getSnails()) {
+                float dist = player.getPosition().dst2(snail.getPosition()); // dst2 es más rápido
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = snail;
+                }
+            }
+
+            // Si está cerca, disparar
+            if (closest != null && Math.sqrt(minDist) < 200f) {
+                bullets.add(player.shootAt(closest.getPosition(), bulletTexture));
+                shootCooldown = shootInterval;
+            }
+        }
+
+
+        spawner.update(delta,player.getPosition());
+
+        for (Bullet bullet : bullets) {
+            bullet.update(delta);
+        }
+
+
         // Cámara sigue al jugador
         camera.position.set(player.getPosition(), 0);
         camera.update();
@@ -94,7 +139,13 @@ public class GameScreen implements Screen {
         // Dibujar mapa y jugador
         batch.begin();
         batch.draw(mapTexture, 0, 0, virtualWidth, VIRTUAL_HEIGHT);
+
+        spawner.render(batch);
         player.render(batch);
+        for (Bullet bullet : bullets) {
+            bullet.render(batch);
+        }
+
         batch.end();
 
         // Dibujar joystick en HUD
