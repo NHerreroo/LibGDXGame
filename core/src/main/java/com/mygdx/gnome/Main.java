@@ -21,10 +21,16 @@ public class Main extends Game {
 
     @Override
     public void create() {
+
         batch = new SpriteBatch();
         assetManager = new AssetManager();
 
+
         assetManager.load("GNOME/Map/Map.png", Texture.class);
+        assetManager.load("GNOME/Player/1.png", Texture.class);
+        assetManager.load("GNOME/Player/1.png", Texture.class);
+        assetManager.load("GNOME/Player/1.png", Texture.class);
+
         assetManager.finishLoading();
 
         this.setScreen(new MainMenuScreen(this));
