@@ -51,9 +51,9 @@ public class GameScreen implements Screen {
         Texture playerTexture = game.assetManager.get("GNOME/Player/1.png", Texture.class);
         Texture snailTexture = game.assetManager.get("GNOME/Snail/1.png", Texture.class);
 
-        touchBg = game.assetManager.get("GNOME/Player/1.png", Texture.class);
-        touchKnob = game.assetManager.get("GNOME/Player/1.png", Texture.class);
-        bulletTexture = new Texture("GNOME/Player/1.png");
+        touchBg = game.assetManager.get("GNOME/joysk1.png", Texture.class);
+        touchKnob = game.assetManager.get("GNOME/joysk2.png", Texture.class);
+        bulletTexture = new Texture("GNOME/bullet.png");
 
 
         float mapAspectRatio = (float) mapTexture.getWidth() / mapTexture.getHeight();
