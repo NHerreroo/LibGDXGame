@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class GameScreen implements Screen {
@@ -26,6 +27,9 @@ public class GameScreen implements Screen {
     Player player;
 
     Spawner spawner;
+
+    HUD hud;
+    Tienda tienda;
 
     public static final float VIRTUAL_HEIGHT = 720f;
     public float virtualWidth;
@@ -71,11 +75,17 @@ public class GameScreen implements Screen {
         hudCamera.update();
 
         player = new Player(playerTexture, virtualWidth / 2f, VIRTUAL_HEIGHT / 2f);
+        hud = new HUD(virtualWidth, VIRTUAL_HEIGHT, player);
+        tienda = new Tienda(virtualWidth, VIRTUAL_HEIGHT);
         spawner = new Spawner(snailTexture, virtualWidth, VIRTUAL_HEIGHT);
     }
 
     @Override
     public void render(float delta) {
+
+
+        shootInterval = player.getCadencia();
+
         Gdx.gl.glClearColor(1f, 0f, 0f, 1f); // RGBA (1,0,0,1) = rojo sólido
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         // Input
@@ -124,7 +134,7 @@ public class GameScreen implements Screen {
         }
 
 
-        spawner.update(delta,player.getPosition());
+        spawner.update(delta,player.getPosition(), tienda.activa);
 
         for (Bullet bullet : bullets) {
             bullet.update(delta);
@@ -142,6 +152,13 @@ public class GameScreen implements Screen {
 
         spawner.render(batch);
         player.render(batch);
+        hud.update(delta);
+
+        if (hud.getTimeLeft() <= 0 && !tienda.activa) {
+            tienda.show();
+            spawner.eliminarTodos();
+        }
+
         for (Bullet bullet : bullets) {
             bullet.render(batch);
         }
@@ -165,14 +182,43 @@ public class GameScreen implements Screen {
             batch.draw(touchKnob, knobPos.x - knobSize / 2f, knobPos.y - knobSize / 2f, knobSize, knobSize);
             batch.end();
         }
+
+
+        //detecta colison
+        Iterator<Bullet> bulletIt = bullets.iterator();
+        while (bulletIt.hasNext()) {
+            Bullet bullet = bulletIt.next();
+
+            Iterator<Snail> snailIt = spawner.getSnails().iterator();
+            while (snailIt.hasNext()) {
+                Snail snail = snailIt.next();
+
+                // Comprobar colisión simple (círculo)
+                if (bullet.getPosition().dst(snail.getPosition()) < 20f) { // puedes ajustar el valor
+                    snail.recibirDaño(player.getAtaque());
+                    bulletIt.remove();
+                    if (snail.estaMuerto()) {
+                        snailIt.remove();
+                    }
+                    break;
+                }
+            }
+        }
+
+
+        hud.render(batch);
+        tienda.render(batch);
     }
 
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height);
         hudViewport.update(width, height);
-
+        hud.resize(width,height);
+        tienda.resize(width, height);
     }
+
+
 
     @Override public void show() {}
     @Override public void hide() {}

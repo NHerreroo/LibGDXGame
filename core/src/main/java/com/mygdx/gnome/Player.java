@@ -8,6 +8,9 @@ public class Player {
     private Texture texture;
     private Vector2 position;
     private float speed = 50f; // píxeles por segundo
+    private int vidas = 3;
+    private int ataque = 10;
+    private float cadencia = 1.8f;
 
     public Player(Texture texture, float x, float y) {
         this.texture = texture;
@@ -32,5 +35,23 @@ public class Player {
     public Bullet shootAt(Vector2 target, Texture bulletTexture) {
         return new Bullet(bulletTexture, position, target);
     }
+
+
+    public int getVidas() {
+        return vidas;
+    }
+
+    public float getVelocidad() {
+        return speed;
+    }
+
+    public int getAtaque() {
+        return ataque;
+    }
+
+    public float getCadencia() {
+        return cadencia;
+    }
+
 
 }

@@ -9,6 +9,9 @@ public class Snail {
     private Vector2 position;
     private float speed = 20f; // píxeles por segundo
 
+    private int vida = 30;
+
+
     public Snail(Texture texture, float x, float y) {
         this.texture = texture;
         this.position = new Vector2(x, y);
@@ -31,4 +34,13 @@ public class Snail {
     public Vector2 getPosition() {
         return position;
     }
+
+    public void recibirDaño(int cantidad) {
+        vida -= cantidad;
+    }
+
+    public boolean estaMuerto() {
+        return vida <= 0;
+    }
+
 }

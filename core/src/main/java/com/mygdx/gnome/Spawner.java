@@ -25,7 +25,10 @@ public class Spawner {
         this.mapHeight = mapHeight;
     }
 
-    public void update(float delta, Vector2 playerPosition) {
+    public void update(float delta, Vector2 playerPosition, boolean tiendaActiva) {
+
+        if (tiendaActiva) return;
+
         spawnTimer += delta;
 
         //if (spawnTimer >= spawnInterval && snails.size() < maxSnails)   LIMITE DE CARACOLES
@@ -55,4 +58,13 @@ public class Spawner {
     public List<Snail> getSnails() {
         return snails;
     }
+
+    public void eliminarTodos() {
+        Iterator<Snail> it = snails.iterator();
+        while (it.hasNext()) {
+            Snail snail = it.next();
+            it.remove();
+        }
+    }
+
 }
