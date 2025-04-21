@@ -23,9 +23,12 @@ public class Tienda {
     public boolean activa = false;
 
     private Item[] items = new Item[2];
+    private boolean[] itemsComprados = new boolean[2];
     private BitmapFont itemFont;
     private float botonWidth = 300f;
     private float botonHeight = 100f;
+    private int rerollCost = 5; // Coste inicial de 5
+    private int rerollIncrement = 3; // Incremento de 3 por reroll
 
     private Player player;
 
@@ -55,6 +58,7 @@ public class Tienda {
 
     public void show() {
         activa = true;
+        rerollCost = 5; // Resetear coste al mostrar tienda
     }
 
     public void render(SpriteBatch batch) {
@@ -70,7 +74,11 @@ public class Tienda {
 
             if (touch.x >= rerollX && touch.x <= rerollX + botonWidth &&
                 touch.y >= rerollY && touch.y <= rerollY + botonHeight) {
-                generarItems();
+                if (player.getDinero() >= rerollCost) {
+                    player.restarDinero(rerollCost);
+                    rerollCost += rerollIncrement; // Aumentar coste para próximo reroll
+                    generarItems();
+                }
             }
 
             for (int i = 0; i < items.length; i++) {
@@ -78,8 +86,8 @@ public class Tienda {
                 float y = virtualHeight - 200f - i * (botonHeight + 40f);
 
                 if (touch.x >= x && touch.x <= x + botonWidth &&
-                    touch.y >= y && touch.y <= y + botonHeight) {
-                    comprarItem(items[i].nombre, items[i].precio);
+                    touch.y >= y && touch.y <= y + botonHeight && !itemsComprados[i]) {
+                    comprarItem(i);
                 }
             }
 
@@ -89,6 +97,9 @@ public class Tienda {
             if (touch.x >= siguienteX && touch.x <= siguienteX + botonWidth &&
                 touch.y >= siguienteY && touch.y <= siguienteY + botonHeight) {
                 activa = false;
+                if (player.getGameScreen() != null) {
+                    player.getGameScreen().getHUD().resetTimeLeft();
+                }
             }
         }
 
@@ -105,18 +116,33 @@ public class Tienda {
         // Dibujar botones de ítems + reroll + siguiente
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
+        // Dibujar ítems
         for (int i = 0; i < items.length; i++) {
             float x = virtualWidth / 2f - botonWidth / 2f;
             float y = virtualHeight - 200f - i * (botonHeight + 40f);
-            shapeRenderer.setColor(0.2f, 0.2f, 0.8f, 1f);
+
+            if (itemsComprados[i]) {
+                shapeRenderer.setColor(0.5f, 0.5f, 0.5f, 1f);
+            } else if (player.getDinero() >= items[i].precio) {
+                shapeRenderer.setColor(0.2f, 0.2f, 0.8f, 1f);
+            } else {
+                shapeRenderer.setColor(0.8f, 0.2f, 0.2f, 1f);
+            }
+
             shapeRenderer.rect(x, y, botonWidth, botonHeight);
         }
 
+        // Dibujar botón REROLL
         float rerollX = virtualWidth / 2f - botonWidth / 2f;
         float rerollY = virtualHeight - 500f;
-        shapeRenderer.setColor(0.8f, 0.3f, 0.3f, 1f);
+        if (player.getDinero() >= rerollCost) {
+            shapeRenderer.setColor(0.8f, 0.3f, 0.3f, 1f);
+        } else {
+            shapeRenderer.setColor(0.3f, 0.3f, 0.3f, 1f);
+        }
         shapeRenderer.rect(rerollX, rerollY, botonWidth, botonHeight);
 
+        // Dibujar botón SIGUIENTE
         float siguienteX = virtualWidth / 2f - botonWidth / 2f;
         float siguienteY = 100f;
         shapeRenderer.setColor(0.2f, 0.8f, 0.2f, 1f);
@@ -131,55 +157,65 @@ public class Tienda {
         font.setColor(Color.WHITE);
         font.draw(batch, "Tienda", virtualWidth / 2f - 100, virtualHeight - 80);
 
+        // Texto de ítems
         for (int i = 0; i < items.length; i++) {
             float x = virtualWidth / 2f - botonWidth / 2f;
             float y = virtualHeight - 200f - i * (botonHeight + 40f);
-            itemFont.draw(batch, items[i].nombre + " - $" + items[i].precio, x + 20, y + 60);
+
+            if (itemsComprados[i]) {
+                itemFont.setColor(Color.DARK_GRAY);
+                itemFont.draw(batch, "COMPRADO", x + 90, y + 60);
+            } else {
+                itemFont.setColor(Color.WHITE);
+                itemFont.draw(batch, items[i].nombre + " - $" + items[i].precio, x + 20, y + 60);
+            }
         }
 
-        itemFont.draw(batch, "REROLL", rerollX + 90, rerollY + 60);
+        // Texto de botones
+        itemFont.setColor(Color.WHITE);
+        itemFont.draw(batch, "REROLL ($" + rerollCost + ")", rerollX + 60, rerollY + 60);
         itemFont.draw(batch, "SIGUIENTE", siguienteX + 60, siguienteY + 60);
 
         batch.end();
     }
 
-
     private void generarItems() {
         String[] nombres = {"LANZA", "HALO", "ROBOT", "AK47"};
         for (int i = 0; i < items.length; i++) {
             String nombre = nombres[(int) (Math.random() * nombres.length)];
-            int precio = 0; // puedes variar si querés por ítem
+            int precio = 100 + (int)(Math.random() * 200);
             items[i] = new Item(nombre, precio);
+            itemsComprados[i] = false;
         }
     }
 
+    private void comprarItem(int index) {
+        if (itemsComprados[index]) return;
 
-    private void comprarItem(String nombre, int precio) {
-        if (player.getDinero() < precio) {
+        if (player.getDinero() < items[index].precio) {
             System.out.println("No tienes suficiente dinero.");
             return;
         }
 
-        player.restarDinero(precio);
+        player.restarDinero(items[index].precio);
+        itemsComprados[index] = true;
 
-        switch (nombre) {
+        switch (items[index].nombre) {
             case "LANZA":
-                player.addItem(new Lanza(player));
+                player.agregarHabilidadPermanente(new Lanza(player));
                 break;
             case "HALO":
-                player.addItem(new Halo(player));
+                player.agregarHabilidadPermanente(new Halo(player));
+                System.out.println("Halo comprado y añadido!"); // Debug
                 break;
             case "ROBOT":
-                player.addItem(new Robot(player));
+                player.agregarHabilidadPermanente(new Robot(player));
                 break;
             case "AK47":
-                player.addItem(new AK47(player));
+                player.agregarHabilidadPermanente(new AK47(player));
                 break;
-            default:
-                System.out.println("Ítem no reconocido: " + nombre);
         }
     }
-
 
     private static class Item {
         String nombre;

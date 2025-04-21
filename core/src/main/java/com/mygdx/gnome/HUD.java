@@ -61,4 +61,8 @@ public class HUD {
 
         batch.end();
     }
+
+    public void resetTimeLeft() {
+        timeLeft = 10f; // O el valor inicial que desees
+    }
 }
