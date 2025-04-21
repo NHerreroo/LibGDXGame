@@ -76,7 +76,7 @@ public class GameScreen implements Screen {
 
         player = new Player(playerTexture, virtualWidth / 2f, VIRTUAL_HEIGHT / 2f);
         hud = new HUD(virtualWidth, VIRTUAL_HEIGHT, player);
-        tienda = new Tienda(virtualWidth, VIRTUAL_HEIGHT);
+        tienda = new Tienda(virtualWidth, VIRTUAL_HEIGHT, player); // MODIFICADO
         spawner = new Spawner(snailTexture, virtualWidth, VIRTUAL_HEIGHT);
     }
 
@@ -100,6 +100,11 @@ public class GameScreen implements Screen {
         } else {
             isTouching = false;
         }
+
+
+        player.updateItems(delta);
+
+        player.renderItems(batch);
 
         // Movimiento del player
         Vector2 direction = new Vector2();

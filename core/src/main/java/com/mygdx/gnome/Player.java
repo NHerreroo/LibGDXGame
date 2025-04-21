@@ -4,6 +4,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Player {
     private Texture texture;
     private Vector2 position;
@@ -11,6 +14,10 @@ public class Player {
     private int vidas = 3;
     private int ataque = 10;
     private float cadencia = 1.8f;
+
+    private int dinero = 300;
+
+    private List<EquipableItem> equipados = new ArrayList<>();
 
     public Player(Texture texture, float x, float y) {
         this.texture = texture;
@@ -53,5 +60,34 @@ public class Player {
         return cadencia;
     }
 
+
+    public int getDinero() {
+        return dinero;
+    }
+
+    public void restarDinero(int cantidad) {
+        dinero -= cantidad;
+    }
+
+    public void sumarDinero(int cantidad) {
+        dinero += cantidad;
+    }
+
+
+    public void addItem(EquipableItem item) {
+        equipados.add(item);
+    }
+
+    public void updateItems(float delta) {
+        for (EquipableItem item : equipados) {
+            item.update(delta);
+        }
+    }
+
+    public void renderItems(SpriteBatch batch) {
+        for (EquipableItem item : equipados) {
+            item.render(batch);
+        }
+    }
 
 }

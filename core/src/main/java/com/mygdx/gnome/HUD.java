@@ -21,7 +21,7 @@ public class HUD {
         this.virtualWidth = width;
         this.virtualHeight = height;
         this.player = player;
-        this.timeLeft = 20f;
+        this.timeLeft = 10f;
 
         hudCamera = new OrthographicCamera();
         hudViewport = new FillViewport(width, height, hudCamera);
