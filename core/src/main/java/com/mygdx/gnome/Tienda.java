@@ -183,7 +183,9 @@ public class Tienda {
         String[] nombres = {"LANZA", "HALO", "ROBOT", "AK47"};
         for (int i = 0; i < items.length; i++) {
             String nombre = nombres[(int) (Math.random() * nombres.length)];
-            int precio = 100 + (int)(Math.random() * 200);
+            int precio = 0;
+            //int precio = 100 + (int)(Math.random() * 200);
+
             items[i] = new Item(nombre, precio);
             itemsComprados[i] = false;
         }

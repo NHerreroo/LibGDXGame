@@ -156,6 +156,10 @@ public class GameScreen implements Screen {
         for (Bullet bullet : bullets) {
             bullet.render(batch);
         }
+
+        for (Bullet bullet : player.getBullets()) {
+            bullet.render(batch);
+        }
         batch.end();
 
         // 2. Dibujar habilidades permanentes (usando ShapeRenderer)

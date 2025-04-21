@@ -12,8 +12,11 @@ public class Halo implements EquipableItem {
     private float timer = 0;
     private float damageInterval = 0.5f;
     private float radius = 60f;
-    private float pulseSpeed = 0.005f;
+    private float pulseSpeed = 3f;
     private float pulseSize = 5f;
+    private float currentPulse = 0;
+    private boolean expanding = true;
+    private int damage = 15;
 
     public Halo(Player player) {
         this.player = player;
@@ -21,6 +24,20 @@ public class Halo implements EquipableItem {
 
     @Override
     public void update(float delta) {
+        // Efecto de pulso
+        if (expanding) {
+            currentPulse += pulseSpeed;
+            if (currentPulse >= pulseSize) {
+                expanding = false;
+            }
+        } else {
+            currentPulse -= pulseSpeed;
+            if (currentPulse <= 0) {
+                expanding = true;
+            }
+        }
+
+        // Daño a enemigos
         timer += delta;
         if (timer >= damageInterval) {
             timer = 0;
@@ -34,30 +51,29 @@ public class Halo implements EquipableItem {
         List<Snail> snails = player.getGameScreen().getSpawner().getSnails();
         for (Snail snail : snails) {
             if (player.getPosition().dst(snail.getPosition()) <= radius) {
-                snail.recibirDaño(50);
+                snail.recibirDaño(damage);
             }
         }
     }
 
     @Override
     public void render(SpriteBatch batch) {
-        // No manipular el batch aquí
         ShapeRenderer sr = new ShapeRenderer();
         try {
             sr.setProjectionMatrix(batch.getProjectionMatrix());
             Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-            // Aura interior translúcida
+            // Aura interior con efecto de pulso
             sr.begin(ShapeRenderer.ShapeType.Filled);
             sr.setColor(0, 0.8f, 0.8f, 0.35f);
-            sr.circle(player.getPosition().x, player.getPosition().y, radius);
+            sr.circle(player.getPosition().x, player.getPosition().y, radius + currentPulse);
             sr.end();
 
-            // Borde del halo
+            // Borde del halo con efecto de pulso
             sr.begin(ShapeRenderer.ShapeType.Line);
-            sr.setColor(0, 1, 1, 0.4f);
-            sr.circle(player.getPosition().x, player.getPosition().y, radius);
+            sr.setColor(0, 1, 1, 0.8f);
+            sr.circle(player.getPosition().x, player.getPosition().y, radius + currentPulse);
             sr.end();
         } finally {
             sr.dispose();

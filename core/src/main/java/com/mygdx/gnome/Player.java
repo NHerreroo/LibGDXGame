@@ -51,6 +51,17 @@ public class Player {
         habilidadesPermanentes.add(habilidad);
     }
 
+    public List<Bullet> getBullets() {
+        List<Bullet> allBullets = new ArrayList<>();
+        for (EquipableItem item : habilidadesPermanentes) {
+            if (item instanceof AK47) {
+                allBullets.addAll(((AK47)item).getBullets());
+            }
+            // Puedes añadir más items que disparen aquí
+        }
+        return allBullets;
+    }
+
     // Resto de métodos getter y setter...
     public Vector2 getPosition() { return position; }
     public int getVidas() { return vidas; }
