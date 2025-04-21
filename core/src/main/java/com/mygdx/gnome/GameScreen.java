@@ -115,18 +115,8 @@ public class GameScreen implements Screen {
         // Disparo automático
         shootCooldown -= delta;
         if (shootCooldown <= 0f && !spawner.getSnails().isEmpty()) {
-            Snail closest = null;
-            float minDist = Float.MAX_VALUE;
-
-            for (Snail snail : spawner.getSnails()) {
-                float dist = player.getPosition().dst2(snail.getPosition());
-                if (dist < minDist) {
-                    minDist = dist;
-                    closest = snail;
-                }
-            }
-
-            if (closest != null && Math.sqrt(minDist) < 200f) {
+            Snail closest = findClosestEnemy();
+            if (closest != null && player.getPosition().dst(closest.getPosition()) < 200f) {
                 bullets.add(player.shootAt(closest.getPosition(), bulletTexture));
                 shootCooldown = shootInterval;
             }
@@ -152,13 +142,18 @@ public class GameScreen implements Screen {
         spawner.render(batch);
         player.render(batch);
 
-        // Dibujar balas
+        // Dibujar balas del jugador
         for (Bullet bullet : bullets) {
             bullet.render(batch);
         }
 
-        for (Bullet bullet : player.getBullets()) {
-            bullet.render(batch);
+        // Dibujar balas de los items (AK47)
+        for (EquipableItem item : player.getHabilidadesPermanentes()) {
+            if (item instanceof AK47) {
+                for (Bullet bullet : ((AK47)item).getBullets()) {
+                    bullet.render(batch);
+                }
+            }
         }
         batch.end();
 
@@ -190,6 +185,13 @@ public class GameScreen implements Screen {
 
             batch.draw(touchKnob, knobPos.x - knobSize/2f, knobPos.y - knobSize/2f, knobSize, knobSize);
         }
+
+        // Dibujar misiles del Robot
+        for (EquipableItem item : player.getHabilidadesPermanentes()) {
+            if (item instanceof Robot) {
+                ((Robot)item).renderMissiles(batch);
+            }
+        }
         batch.end();
 
         // Dibujar HUD y tienda
@@ -197,6 +199,12 @@ public class GameScreen implements Screen {
         tienda.render(batch);
 
         // Detección de colisiones
+        handleCollisions();
+    }
+
+
+    private void handleCollisions() {
+        // Colisiones balas del jugador
         Iterator<Bullet> bulletIt = bullets.iterator();
         while (bulletIt.hasNext()) {
             Bullet bullet = bulletIt.next();
@@ -215,6 +223,70 @@ public class GameScreen implements Screen {
                 }
             }
         }
+
+        // Colisiones balas de AK47
+        for (EquipableItem item : player.getHabilidadesPermanentes()) {
+            if (item instanceof AK47) {
+                Iterator<Bullet> akBulletIt = ((AK47)item).getBullets().iterator();
+                while (akBulletIt.hasNext()) {
+                    Bullet bullet = akBulletIt.next();
+
+                    Iterator<Snail> snailIt = spawner.getSnails().iterator();
+                    while (snailIt.hasNext()) {
+                        Snail snail = snailIt.next();
+
+                        if (bullet.getPosition().dst(snail.getPosition()) < 20f) {
+                            snail.recibirDaño(((AK47)item).getDamage());
+                            akBulletIt.remove();
+                            if (snail.estaMuerto()) {
+                                snailIt.remove();
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Colisiones misiles del Robot
+        for (EquipableItem item : player.getHabilidadesPermanentes()) {
+            if (item instanceof Robot) {
+                for (Robot.Missile missile : ((Robot)item).getMissiles()) {
+                    if (missile.hasReachedTarget()) {
+                        // El daño ya se aplicó en el update del misil
+                        continue;
+                    }
+
+                    Iterator<Snail> snailIt = spawner.getSnails().iterator();
+                    while (snailIt.hasNext()) {
+                        Snail snail = snailIt.next();
+
+                        if (missile.getPosition().dst(snail.getPosition()) < 20f) {
+                            missile.applyDamage();
+                            if (snail.estaMuerto()) {
+                                snailIt.remove();
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private Snail findClosestEnemy() {
+        Snail closest = null;
+        float minDist = Float.MAX_VALUE;
+
+        for (Snail snail : spawner.getSnails()) {
+            float dist = player.getPosition().dst2(snail.getPosition());
+            if (dist < minDist) {
+                minDist = dist;
+                closest = snail;
+            }
+        }
+
+        return closest;
     }
 
     @Override
