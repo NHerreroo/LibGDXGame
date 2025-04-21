@@ -31,6 +31,12 @@ public class Main extends Game {
         assetManager.load("GNOME/bullet.png", Texture.class);
         assetManager.load("GNOME/joysk1.png", Texture.class);
         assetManager.load("GNOME/joysk2.png", Texture.class);
+        assetManager.load("GNOME/bullet2.png", Texture.class);
+        assetManager.load("GNOME/bullet3.png", Texture.class);
+        assetManager.load("GNOME/robot.png", Texture.class);
+        assetManager.load("GNOME/spear.png", Texture.class);
+        assetManager.load("GNOME/ak47.png", Texture.class);
+
 
 
         assetManager.load("GNOME/Snail/1.png", Texture.class);

@@ -17,6 +17,8 @@ public class Player {
     private GameScreen gameScreen;
     private List<EquipableItem> habilidadesPermanentes = new ArrayList<>();
 
+    private Vector2 lastDirection = new Vector2(1, 0);
+
     public Player(Texture texture, float x, float y, GameScreen gameScreen) {
         this.texture = texture;
         this.position = new Vector2(x, y);
@@ -25,11 +27,17 @@ public class Player {
 
     public void update(float delta, Vector2 direction) {
         if (direction.len() > 0.1f) {
+            lastDirection.set(direction); // Guarda la última dirección
             position.x += direction.x * speed * delta;
             position.y += direction.y * speed * delta;
         }
         actualizarHabilidades(delta);
     }
+
+    public Vector2 getLastDirection() {
+        return lastDirection;
+    }
+
 
     public void render(SpriteBatch batch) {
         batch.draw(texture, position.x - texture.getWidth()/2f, position.y - texture.getHeight()/2f);
@@ -74,5 +82,9 @@ public class Player {
     public GameScreen getGameScreen() { return gameScreen; }
     public Bullet shootAt(Vector2 target, Texture bulletTexture) {
         return new Bullet(bulletTexture, position, target);
+    }
+
+    public List<EquipableItem> getHabilidadesPermanentes() {
+        return habilidadesPermanentes;
     }
 }

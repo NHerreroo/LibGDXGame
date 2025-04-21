@@ -1,27 +1,25 @@
 package com.mygdx.gnome;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 public class AK47 implements EquipableItem {
     private Player player;
     private float fireCooldown = 0;
-    private float fireRate = 0.1f; // Disparos muy rápidos
+    private float fireRate = 0.1f;
     private int damage = 8;
     private Texture bulletTexture;
+    private Texture weaponTexture;
     private List<Bullet> bullets = new ArrayList<>();
 
     public AK47(Player player) {
         this.player = player;
-        this.bulletTexture = new Texture("GNOME/bullet.png"); // Necesitarás esta textura
+        this.bulletTexture = player.getGameScreen().game.assetManager.get("GNOME/bullet2.png", Texture.class);
+        this.weaponTexture = player.getGameScreen().game.assetManager.get("GNOME/ak47.png", Texture.class);
     }
 
     @Override
@@ -34,18 +32,16 @@ public class AK47 implements EquipableItem {
             Bullet bullet = it.next();
             bullet.update(delta);
 
-            // Eliminar balas fuera de pantalla
             if (bullet.getPosition().dst(player.getPosition()) > 500) {
                 it.remove();
             }
         }
 
-        // Disparar automáticamente al enemigo más cercano
+        // Disparar automáticamente
         if (fireCooldown <= 0 && player.getGameScreen() != null) {
             Snail closest = findClosestEnemy();
             if (closest != null) {
-                Vector2 target = closest.getPosition();
-                bullets.add(new Bullet(bulletTexture, player.getPosition(), target));
+                bullets.add(new Bullet(bulletTexture, player.getPosition(), closest.getPosition()));
                 fireCooldown = fireRate;
             }
         }
@@ -70,25 +66,19 @@ public class AK47 implements EquipableItem {
 
     @Override
     public void render(SpriteBatch batch) {
-        // Dibujar el arma en el jugador
-        ShapeRenderer sr = new ShapeRenderer();
-        sr.setProjectionMatrix(batch.getProjectionMatrix());
-        sr.begin(ShapeRenderer.ShapeType.Filled);
-        sr.setColor(Color.BROWN);
-        sr.rect(player.getPosition().x + 20, player.getPosition().y - 10, 30, 10);
-        sr.end();
-
-        // Dibujar las balas
-        batch.begin();
-        for (Bullet bullet : bullets) {
-            bullet.render(batch);
-        }
-        batch.end();
-
-        sr.dispose();
+        // Dibujar el arma en el jugador (rotada hacia la dirección del movimiento)
+        float rotation = player.getLastDirection().angleDeg();
+        batch.draw(weaponTexture,
+            player.getPosition().x - weaponTexture.getWidth()/2f + 20,
+            player.getPosition().y - weaponTexture.getHeight()/2f - 10,
+            weaponTexture.getWidth()/2f, weaponTexture.getHeight()/2f,
+            weaponTexture.getWidth(), weaponTexture.getHeight(),
+            1, 1, rotation, 0, 0,
+            weaponTexture.getWidth(), weaponTexture.getHeight(), false, false);
     }
 
-    public Collection<? extends Bullet> getBullets() {
+
+    public List<Bullet> getBullets() {
         return bullets;
     }
 }
