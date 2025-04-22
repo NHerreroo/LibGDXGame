@@ -174,12 +174,6 @@ public class GameScreen implements Screen {
             batch.draw(touchKnob, knobPos.x - knobSize/2f, knobPos.y - knobSize/2f, knobSize, knobSize);
         }
 
-        for (EquipableItem item : player.getHabilidadesPermanentes()) {
-            if (item instanceof Robot) {
-                ((Robot)item).render(batch);
-            }
-        }
-
         batch.end();
 
         hud.render(batch);
