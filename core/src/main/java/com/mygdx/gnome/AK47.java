@@ -1,4 +1,3 @@
-// core/src/main/java/com/mygdx/gnome/AK47.java
 package com.mygdx.gnome;
 
 import com.badlogic.gdx.graphics.Texture;
@@ -17,6 +16,7 @@ public class AK47 implements EquipableItem {
 
     private int level = 1;
     private List<Float> baseAngles = new ArrayList<>();
+    private float distance = 50f;        // distancia de cada arma al jugador
 
     private Texture bulletTexture;
     private Texture weaponTexture;
@@ -39,29 +39,31 @@ public class AK47 implements EquipableItem {
 
     private void updateBaseAngles() {
         baseAngles.clear();
-        float gap = 360f / (level+ (level==1?0:0)); // si level=1, 1 arma; 2→2 armas, etc.
+        // repartir las armas uniformemente alrededor de 360°
         for (int i = 0; i < level; i++) {
-            baseAngles.add(i * (360f/level));
+            baseAngles.add(i * (360f / level));
         }
     }
 
     @Override
     public void update(float delta) {
         fireCooldown -= delta;
+        // actualizar balas
         Iterator<Bullet> it = bullets.iterator();
         while (it.hasNext()) {
             Bullet b = it.next();
             b.update(delta);
             if (b.getPosition().dst(player.getPosition()) > 500) it.remove();
         }
+        // disparar desde cada arma
         if (fireCooldown <= 0) {
             Snail target = findClosestEnemy();
             if (target != null) {
-                Vector2 pos = player.getPosition();
-                for (float b : baseAngles) {
+                Vector2 center = player.getPosition();
+                for (float ang : baseAngles) {
                     Vector2 start = new Vector2(
-                        pos.x + (float)Math.cos(Math.toRadians(b)) * weaponTexture.getWidth(),
-                        pos.y + (float)Math.sin(Math.toRadians(b)) * weaponTexture.getWidth()
+                        center.x + (float)Math.cos(Math.toRadians(ang)) * distance,
+                        center.y + (float)Math.sin(Math.toRadians(ang)) * distance
                     );
                     bullets.add(new Bullet(bulletTexture, start, target.getPosition()));
                 }
@@ -73,30 +75,42 @@ public class AK47 implements EquipableItem {
     private Snail findClosestEnemy() {
         Snail best = null;
         float md = Float.MAX_VALUE;
-        for (Snail s: player.getGameScreen().getSpawner().getSnails()) {
+        for (Snail s : player.getGameScreen().getSpawner().getSnails()) {
             float d = player.getPosition().dst2(s.getPosition());
-            if (d<md){md=d;best=s;}
+            if (d < md) { md = d; best = s; }
         }
         return best;
     }
 
     @Override
     public void render(SpriteBatch batch) {
-        Vector2 pos = player.getPosition();
-        float rot = player.getLastDirection().angleDeg();
-        boolean flip = player.getLastDirection().x<0;
-        // dibuja arma
-        batch.draw(weaponTexture,
-            pos.x, pos.y - weaponTexture.getHeight()/2f,
-            0, weaponTexture.getHeight()/2f,
-            weaponTexture.getWidth(), weaponTexture.getHeight(),
-            1,1, rot,
-            0,0,
-            weaponTexture.getWidth(), weaponTexture.getHeight(),
-            false, flip
-        );
-        // balas
-        for (Bullet b: bullets) b.render(batch);
+        Vector2 center = player.getPosition();
+        // dibujar cada arma alrededor del jugador
+        for (float ang : baseAngles) {
+            float rad = (float)Math.toRadians(ang);
+            float x = center.x + (float)Math.cos(rad) * distance;
+            float y = center.y + (float)Math.sin(rad) * distance;
+            // rotar la textura para apuntar hacia afuera
+            batch.draw(
+                weaponTexture,
+                x - weaponTexture.getWidth()/2f,
+                y - weaponTexture.getHeight()/2f,
+                weaponTexture.getWidth()/2f,
+                weaponTexture.getHeight()/2f,
+                weaponTexture.getWidth(),
+                weaponTexture.getHeight(),
+                1,1,
+                ang,
+                0,0,
+                weaponTexture.getWidth(),
+                weaponTexture.getHeight(),
+                false,false
+            );
+        }
+        // render de las balas
+        for (Bullet b : bullets) {
+            b.render(batch);
+        }
     }
 
     public List<Bullet> getBullets() {
