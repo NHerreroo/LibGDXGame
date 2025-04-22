@@ -19,8 +19,9 @@ public class Robot implements EquipableItem {
 
     private Vector2 offset = new Vector2(-40, 60); // posición relativa del robot respecto al jugador
 
-    public Robot(Player player) {
+    public Robot(Player player, Vector2 offset) {
         this.player = player;
+        this.offset = offset;
         this.missileTexture = player.getGameScreen().game.assetManager.get("GNOME/bullet3.png", Texture.class);
         this.robotTexture = player.getGameScreen().game.assetManager.get("GNOME/robot.png", Texture.class);
     }

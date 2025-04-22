@@ -11,6 +11,8 @@ import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import java.util.HashMap;
+
 public class Tienda {
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -31,6 +33,8 @@ public class Tienda {
     private int rerollIncrement = 3; // Incremento de 3 por reroll
 
     private Player player;
+
+    private HashMap purchaseCounts = new HashMap();
 
     public Tienda(float width, float height, Player player) {
         this.virtualWidth = width;
@@ -192,7 +196,15 @@ public class Tienda {
     }
 
     private void comprarItem(int index) {
-        if (itemsComprados[index]) return;
+
+        String key = items[index].nombre;
+        int count = (int) purchaseCounts.getOrDefault(key, 0);
+
+        if (key.equals("LANZA") && count >= 4) return;
+        if (key.equals("AK47")  && count >= 6) return;
+
+        player.restarDinero(items[index].precio);
+        purchaseCounts.put(key, count + 1);
 
         if (player.getDinero() < items[index].precio) {
             System.out.println("No tienes suficiente dinero.");
@@ -200,7 +212,7 @@ public class Tienda {
         }
 
         player.restarDinero(items[index].precio);
-        itemsComprados[index] = true;
+
 
         switch (items[index].nombre) {
             case "LANZA":
@@ -210,8 +222,14 @@ public class Tienda {
                 player.agregarHabilidadPermanente(new Halo(player));
                 System.out.println("Halo comprado y añadido!"); // Debug
                 break;
-            case "ROBOT":
-                player.agregarHabilidadPermanente(new Robot(player));
+            case "ROBOT": //aparece en random
+                float dist = 60f;              // distancia al jugador
+                float angle = (float)(Math.random() * Math.PI * 2);
+                Vector2 randOffset = new Vector2(
+                    (float)Math.cos(angle) * dist,
+                    (float)Math.sin(angle) * dist
+                );
+                player.agregarHabilidadPermanente(new Robot(player, randOffset));
                 break;
             case "AK47":
                 player.agregarHabilidadPermanente(new AK47(player));
