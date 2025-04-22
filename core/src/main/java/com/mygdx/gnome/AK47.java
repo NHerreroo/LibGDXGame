@@ -1,8 +1,10 @@
+// core/src/main/java/com/mygdx/gnome/AK47.java
 package com.mygdx.gnome;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -12,6 +14,10 @@ public class AK47 implements EquipableItem {
     private float fireCooldown = 0;
     private float fireRate = 0.3f;
     private int damage = 8;
+
+    private int level = 1;
+    private List<Float> baseAngles = new ArrayList<>();
+
     private Texture bulletTexture;
     private Texture weaponTexture;
     private List<Bullet> bullets = new ArrayList<>();
@@ -20,136 +26,84 @@ public class AK47 implements EquipableItem {
         this.player = player;
         this.bulletTexture = player.getGameScreen().game.assetManager.get("GNOME/bullet2.png", Texture.class);
         this.weaponTexture = player.getGameScreen().game.assetManager.get("GNOME/ak47.png", Texture.class);
+        updateBaseAngles();
+    }
+
+    /** Sube nivel hasta 6 */
+    public void upgrade() {
+        if (level < 6) {
+            level++;
+            updateBaseAngles();
+        }
+    }
+
+    private void updateBaseAngles() {
+        baseAngles.clear();
+        float gap = 360f / (level+ (level==1?0:0)); // si level=1, 1 arma; 2→2 armas, etc.
+        for (int i = 0; i < level; i++) {
+            baseAngles.add(i * (360f/level));
+        }
     }
 
     @Override
     public void update(float delta) {
         fireCooldown -= delta;
-
-        // Actualizar balas
         Iterator<Bullet> it = bullets.iterator();
         while (it.hasNext()) {
-            Bullet bullet = it.next();
-            bullet.update(delta);
-
-            if (bullet.getPosition().dst(player.getPosition()) > 500) {
-                it.remove();
-            }
+            Bullet b = it.next();
+            b.update(delta);
+            if (b.getPosition().dst(player.getPosition()) > 500) it.remove();
         }
-
-        // Disparar automáticamente
-        if (fireCooldown <= 0 && player.getGameScreen() != null) {
-            Snail closest = findClosestEnemy();
-            if (closest != null) {
-                bullets.add(new Bullet(bulletTexture, getBarrelEndPosition(), closest.getPosition()));
+        if (fireCooldown <= 0) {
+            Snail target = findClosestEnemy();
+            if (target != null) {
+                Vector2 pos = player.getPosition();
+                for (float b : baseAngles) {
+                    Vector2 start = new Vector2(
+                        pos.x + (float)Math.cos(Math.toRadians(b)) * weaponTexture.getWidth(),
+                        pos.y + (float)Math.sin(Math.toRadians(b)) * weaponTexture.getWidth()
+                    );
+                    bullets.add(new Bullet(bulletTexture, start, target.getPosition()));
+                }
                 fireCooldown = fireRate;
             }
         }
-
     }
 
     private Snail findClosestEnemy() {
-        if (player.getGameScreen() == null) return null;
-
-        Snail closest = null;
-        float minDist = Float.MAX_VALUE;
-
-        for (Snail snail : player.getGameScreen().getSpawner().getSnails()) {
-            float dist = player.getPosition().dst2(snail.getPosition());
-            if (dist < minDist) {
-                minDist = dist;
-                closest = snail;
-            }
+        Snail best = null;
+        float md = Float.MAX_VALUE;
+        for (Snail s: player.getGameScreen().getSpawner().getSnails()) {
+            float d = player.getPosition().dst2(s.getPosition());
+            if (d<md){md=d;best=s;}
         }
-
-        return closest;
+        return best;
     }
-
-    private Vector2 getBarrelEndPosition() {
-        Vector2 offset = new Vector2(player.getLastDirection()).nor().scl(weaponTexture.getWidth());
-        return new Vector2(player.getPosition()).add(offset);
-    }
-
 
     @Override
     public void render(SpriteBatch batch) {
-        float rotation = player.getLastDirection().angleDeg();
-
-        boolean mirandoIzquierda = player.getLastDirection().x < 0;
-
-        float originX = 0f;
-        float originY = weaponTexture.getHeight() / 2f;
-
-        float drawX = player.getPosition().x;
-        float drawY = player.getPosition().y - weaponTexture.getHeight() / 2f;
-
+        Vector2 pos = player.getPosition();
+        float rot = player.getLastDirection().angleDeg();
+        boolean flip = player.getLastDirection().x<0;
+        // dibuja arma
         batch.draw(weaponTexture,
-            drawX, drawY,
-            originX, originY,
+            pos.x, pos.y - weaponTexture.getHeight()/2f,
+            0, weaponTexture.getHeight()/2f,
             weaponTexture.getWidth(), weaponTexture.getHeight(),
-            1, 1, rotation,
-            0, 0,
+            1,1, rot,
+            0,0,
             weaponTexture.getWidth(), weaponTexture.getHeight(),
-            false, mirandoIzquierda);
-
+            false, flip
+        );
+        // balas
+        for (Bullet b: bullets) b.render(batch);
     }
-
-
-
 
     public List<Bullet> getBullets() {
         return bullets;
     }
 
-    public Player getPlayer() {
-        return player;
-    }
-
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
-
-    public float getFireCooldown() {
-        return fireCooldown;
-    }
-
-    public void setFireCooldown(float fireCooldown) {
-        this.fireCooldown = fireCooldown;
-    }
-
-    public float getFireRate() {
-        return fireRate;
-    }
-
-    public void setFireRate(float fireRate) {
-        this.fireRate = fireRate;
-    }
-
     public int getDamage() {
         return damage;
-    }
-
-    public void setDamage(int damage) {
-        this.damage = damage;
-    }
-
-    public Texture getBulletTexture() {
-        return bulletTexture;
-    }
-
-    public void setBulletTexture(Texture bulletTexture) {
-        this.bulletTexture = bulletTexture;
-    }
-
-    public Texture getWeaponTexture() {
-        return weaponTexture;
-    }
-
-    public void setWeaponTexture(Texture weaponTexture) {
-        this.weaponTexture = weaponTexture;
-    }
-
-    public void setBullets(List<Bullet> bullets) {
-        this.bullets = bullets;
     }
 }

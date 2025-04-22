@@ -17,80 +17,59 @@ public class Robot implements EquipableItem {
     private Texture robotTexture;
     private List<Missile> missiles = new ArrayList<>();
 
-    private Vector2 offset = new Vector2(-40, 60); // posición relativa del robot respecto al jugador
+    private Vector2 offset;
 
+    /** Ahora recibe el offset al crearse */
     public Robot(Player player, Vector2 offset) {
         this.player = player;
         this.offset = offset;
         this.missileTexture = player.getGameScreen().game.assetManager.get("GNOME/bullet3.png", Texture.class);
-        this.robotTexture = player.getGameScreen().game.assetManager.get("GNOME/robot.png", Texture.class);
+        this.robotTexture   = player.getGameScreen().game.assetManager.get("GNOME/robot.png", Texture.class);
     }
 
     @Override
     public void update(float delta) {
         fireCooldown -= delta;
-
-        // Actualizar misiles
         Iterator<Missile> it = missiles.iterator();
         while (it.hasNext()) {
-            Missile missile = it.next();
-            missile.update(delta);
-            if (missile.hasReachedTarget()) {
-                it.remove();
-            }
+            Missile m = it.next();
+            m.update(delta);
+            if (m.hasReachedTarget()) it.remove();
         }
-
-        // Disparar desde la posición del robot
-        if (fireCooldown <= 0 && player.getGameScreen() != null) {
-            Snail closest = findClosestEnemy();
-            if (closest != null) {
-                Vector2 startPos = getRobotPosition(); // posición del robot, no del jugador
-                missiles.add(new Missile(missileTexture, startPos, closest.getPosition(), damage, player.getGameScreen()));
+        if (fireCooldown <= 0) {
+            Snail target = findClosestEnemy();
+            if (target != null) {
+                Vector2 start = new Vector2(player.getPosition()).add(offset);
+                missiles.add(new Missile(missileTexture, start, target.getPosition(), damage, player.getGameScreen()));
                 fireCooldown = fireRate;
             }
         }
     }
 
     private Snail findClosestEnemy() {
-        if (player.getGameScreen() == null) return null;
-
-        Snail closest = null;
-        float minDist = Float.MAX_VALUE;
-
-        for (Snail snail : player.getGameScreen().getSpawner().getSnails()) {
-            float dist = player.getPosition().dst2(snail.getPosition());
-            if (dist < minDist) {
-                minDist = dist;
-                closest = snail;
-            }
+        Snail best = null;
+        float md = Float.MAX_VALUE;
+        for (Snail s: player.getGameScreen().getSpawner().getSnails()) {
+            float d = player.getPosition().dst2(s.getPosition());
+            if (d<md){md=d;best=s;}
         }
-
-        return closest;
-    }
-
-    private Vector2 getRobotPosition() {
-        return new Vector2(player.getPosition()).add(offset);
+        return best;
     }
 
     @Override
     public void render(SpriteBatch batch) {
-        // Dibujar el robot flotando al lado del jugador
-        Vector2 robotPos = getRobotPosition();
-        batch.draw(robotTexture,
-            robotPos.x - robotTexture.getWidth() / 2f,
-            robotPos.y - robotTexture.getHeight() / 2f);
-
-        // Dibujar los misiles
-        for (Missile missile : missiles) {
-            missile.render(batch);
-        }
+        Vector2 pos = new Vector2(player.getPosition()).add(offset);
+        batch.draw(robotTexture, pos.x - robotTexture.getWidth()/2f,
+            pos.y - robotTexture.getHeight()/2f);
+        for (Missile m: missiles) m.render(batch);
     }
 
     public List<Missile> getMissiles() {
         return new ArrayList<>(missiles);
     }
 
-    public class Missile {
+
+public class Missile {
         private Texture texture;
         private Vector2 position;
         private Vector2 target;
