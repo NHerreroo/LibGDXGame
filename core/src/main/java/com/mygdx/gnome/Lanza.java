@@ -30,6 +30,7 @@ public class Lanza implements EquipableItem {
         }
     }
 
+
     private void applyDamage() {
         if (player.getGameScreen() == null) return;
 
@@ -47,15 +48,31 @@ public class Lanza implements EquipableItem {
 
     @Override
     public void render(SpriteBatch batch) {
-        float x = player.getPosition().x + (float)Math.cos(Math.toRadians(angle)) * distance;
-        float y = player.getPosition().y + (float)Math.sin(Math.toRadians(angle)) * distance;
+        // Centro del jugador
+        Vector2 center = player.getPosition();
 
+        float rad = (float) Math.toRadians(angle);
+        float offsetX = (float) Math.cos(rad) * distance;
+        float offsetY = (float) Math.sin(rad) * distance;
+
+        float x = center.x + offsetX;
+        float y = center.y + offsetY;
+
+        float originX = spearTexture.getWidth();
+        float originY = spearTexture.getHeight() / 2f;
+
+        x -= originX;
+
+        // Rotar con la punta hacia fuera
         batch.draw(spearTexture,
-            x - spearTexture.getWidth()/2f,
-            y - spearTexture.getHeight()/2f,
-            spearTexture.getWidth()/2f, spearTexture.getHeight()/2f,
+            x, y - originY,
+            originX, originY,
             spearTexture.getWidth(), spearTexture.getHeight(),
-            1, 1, angle, 0, 0,
-            spearTexture.getWidth(), spearTexture.getHeight(), false, false);
+            1, 1, angle,
+            0, 0,
+            spearTexture.getWidth(), spearTexture.getHeight(),
+            false, false);
     }
+
+
 }

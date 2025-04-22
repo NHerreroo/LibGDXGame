@@ -82,14 +82,11 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // Actualizar lógica del juego
         shootInterval = player.getCadencia();
 
-        // Limpiar pantalla
         Gdx.gl.glClearColor(1f, 0f, 0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Manejo de input del joystick
         if (Gdx.input.isTouched()) {
             if (!isTouching) {
                 isTouching = true;
@@ -102,7 +99,6 @@ public class GameScreen implements Screen {
             isTouching = false;
         }
 
-        // Movimiento del jugador
         Vector2 direction = new Vector2();
         if (isTouching) {
             direction.set(touchCurrent).sub(touchOrigin);
@@ -112,7 +108,6 @@ public class GameScreen implements Screen {
             }
         }
 
-        // Disparo automático
         shootCooldown -= delta;
         if (shootCooldown <= 0f && !spawner.getSnails().isEmpty()) {
             Snail closest = findClosestEnemy();
@@ -122,32 +117,26 @@ public class GameScreen implements Screen {
             }
         }
 
-        // Actualizar entidades
         spawner.update(delta, player.getPosition(), tienda.activa);
         for (Bullet bullet : bullets) {
             bullet.update(delta);
         }
         player.actualizarHabilidades(delta);
 
-        // Seguir al jugador con la cámara
         camera.position.set(player.getPosition(), 0);
         camera.update();
 
-        // --- RENDERIZADO ---
-
-        // 1. Dibujar el mapa y sprites (usando SpriteBatch)
+        // === RENDER ENTIDADES ===
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(mapTexture, 0, 0, virtualWidth, VIRTUAL_HEIGHT);
         spawner.render(batch);
         player.render(batch);
 
-        // Dibujar balas del jugador
         for (Bullet bullet : bullets) {
             bullet.render(batch);
         }
 
-        // Dibujar balas de los items (AK47)
         for (EquipableItem item : player.getHabilidadesPermanentes()) {
             if (item instanceof AK47) {
                 for (Bullet bullet : ((AK47)item).getBullets()) {
@@ -155,23 +144,22 @@ public class GameScreen implements Screen {
                 }
             }
         }
-        batch.end();
 
-        // 2. Dibujar habilidades permanentes (usando ShapeRenderer)
+        // Render de habilidades (LANZA, HALO, etc.)
         player.renderizarHabilidades(batch);
 
-        // 3. Dibujar HUD y tienda (usando SpriteBatch)
+        batch.end();
+
+        // === RENDER HUD Y TIENDA ===
         batch.setProjectionMatrix(hudCamera.combined);
         batch.begin();
         hud.update(delta);
 
-        // Mostrar tienda si es tiempo
         if (hud.getTimeLeft() <= 0 && !tienda.activa) {
             tienda.show();
             spawner.eliminarTodos();
         }
 
-        // Dibujar joystick virtual
         if (isTouching) {
             float bgSize = 100f;
             float knobSize = 50f;
@@ -186,21 +174,20 @@ public class GameScreen implements Screen {
             batch.draw(touchKnob, knobPos.x - knobSize/2f, knobPos.y - knobSize/2f, knobSize, knobSize);
         }
 
-        // Dibujar misiles del Robot
         for (EquipableItem item : player.getHabilidadesPermanentes()) {
             if (item instanceof Robot) {
-                ((Robot)item).renderMissiles(batch);
+                ((Robot)item).render(batch);
             }
         }
+
         batch.end();
 
-        // Dibujar HUD y tienda
         hud.render(batch);
         tienda.render(batch);
 
-        // Detección de colisiones
         handleCollisions();
     }
+
 
 
     private void handleCollisions() {

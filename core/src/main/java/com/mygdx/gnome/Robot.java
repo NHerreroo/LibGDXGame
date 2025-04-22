@@ -3,6 +3,7 @@ package com.mygdx.gnome;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +16,8 @@ public class Robot implements EquipableItem {
     private Texture missileTexture;
     private Texture robotTexture;
     private List<Missile> missiles = new ArrayList<>();
+
+    private Vector2 offset = new Vector2(-40, 60); // posición relativa del robot respecto al jugador
 
     public Robot(Player player) {
         this.player = player;
@@ -31,17 +34,17 @@ public class Robot implements EquipableItem {
         while (it.hasNext()) {
             Missile missile = it.next();
             missile.update(delta);
-
             if (missile.hasReachedTarget()) {
                 it.remove();
             }
         }
 
-        // Disparar misiles
+        // Disparar desde la posición del robot
         if (fireCooldown <= 0 && player.getGameScreen() != null) {
             Snail closest = findClosestEnemy();
             if (closest != null) {
-                missiles.add(new Missile(missileTexture, player.getPosition(), closest.getPosition(), damage));
+                Vector2 startPos = getRobotPosition(); // posición del robot, no del jugador
+                missiles.add(new Missile(missileTexture, startPos, closest.getPosition(), damage, player.getGameScreen()));
                 fireCooldown = fireRate;
             }
         }
@@ -64,23 +67,29 @@ public class Robot implements EquipableItem {
         return closest;
     }
 
+    private Vector2 getRobotPosition() {
+        return new Vector2(player.getPosition()).add(offset);
+    }
+
     @Override
     public void render(SpriteBatch batch) {
-        // Dibujar el robot
+        // Dibujar el robot flotando al lado del jugador
+        Vector2 robotPos = getRobotPosition();
         batch.draw(robotTexture,
-            player.getPosition().x + 30,
-            player.getPosition().y + 15,
-            robotTexture.getWidth()/2f, robotTexture.getHeight()/2f,
-            robotTexture.getWidth(), robotTexture.getHeight(),
-            1, 1, 0, 0, 0,
-            robotTexture.getWidth(), robotTexture.getHeight(), false, false);
+            robotPos.x - robotTexture.getWidth() / 2f,
+            robotPos.y - robotTexture.getHeight() / 2f);
+
+        // Dibujar los misiles
+        for (Missile missile : missiles) {
+            missile.render(batch);
+        }
     }
 
     public List<Missile> getMissiles() {
-        return new ArrayList<>(missiles); // Devolvemos copia para evitar modificaciones externas
+        return new ArrayList<>(missiles);
     }
 
-    public static class Missile {
+    public class Missile {
         private Texture texture;
         private Vector2 position;
         private Vector2 target;
@@ -88,56 +97,65 @@ public class Robot implements EquipableItem {
         private float speed = 150f;
         private boolean reachedTarget = false;
         private int damage;
+        private float rotation = 0f;
+        private float waveOffset = (float)(Math.random() * Math.PI * 2);
+        private float time = 0f;
 
-        public Missile(Texture texture, Vector2 start, Vector2 target, int damage) {
+        private GameScreen gameScreen;
+
+        public Missile(Texture texture, Vector2 start, Vector2 target, int damage, GameScreen gameScreen) {
             this.texture = texture;
             this.position = new Vector2(start);
             this.target = new Vector2(target);
             this.velocity = new Vector2(target).sub(start).nor().scl(speed);
             this.damage = damage;
+            this.gameScreen = gameScreen;
         }
 
         public void update(float delta) {
-            if (!reachedTarget) {
-                position.mulAdd(velocity, delta);
-                if (position.dst(target) < 10f) {
-                    reachedTarget = true;
-                    applyDamage();
-                }
+            if (reachedTarget) return;
+
+            time += delta;
+
+            // Movimiento base + efecto de onda
+            Vector2 baseVelocity = new Vector2(velocity);
+            float wave = (float)Math.sin(time * 10 + waveOffset) * 50f;
+            Vector2 perpendicular = new Vector2(-velocity.y, velocity.x).nor().scl(wave);
+            Vector2 finalVelocity = baseVelocity.add(perpendicular).nor().scl(speed);
+
+            position.mulAdd(finalVelocity, delta);
+            rotation += 720 * delta;
+
+            if (position.dst(target) < 15f) {
+                reachedTarget = true;
+                applyDamage();
             }
         }
 
         public void applyDamage() {
-            if (position.dst(target) < 30f) {
-                for (Snail snail : getNearbySnails()) {
+            for (Snail snail : gameScreen.getSpawner().getSnails()) {
+                if (snail.getPosition().dst(position) < 30f) {
                     snail.recibirDaño(damage);
                 }
             }
         }
 
-        private List<Snail> getNearbySnails() {
-            // Implementación para obtener caracoles cercanos al objetivo
-            List<Snail> nearby = new ArrayList<>();
-            // Aquí deberías acceder a los enemigos del juego, similar a como lo hace Robot
-            return nearby;
-        }
-
         public void render(SpriteBatch batch) {
-            if (!reachedTarget) {
-                float rotation = velocity.angleDeg();
-                batch.draw(texture,
-                    position.x - texture.getWidth()/2f,
-                    position.y - texture.getHeight()/2f,
-                    texture.getWidth()/2f,
-                    texture.getHeight()/2f,
-                    texture.getWidth(),
-                    texture.getHeight(),
-                    1, 1, rotation,
-                    0, 0,
-                    texture.getWidth(),
-                    texture.getHeight(),
-                    false, false);
-            }
+            if (reachedTarget) return;
+
+            batch.draw(texture,
+                position.x - texture.getWidth()/2f,
+                position.y - texture.getHeight()/2f,
+                texture.getWidth()/2f,
+                texture.getHeight()/2f,
+                texture.getWidth(),
+                texture.getHeight(),
+                1f, 1f,
+                rotation,
+                0, 0,
+                texture.getWidth(),
+                texture.getHeight(),
+                false, false);
         }
 
         public boolean hasReachedTarget() {

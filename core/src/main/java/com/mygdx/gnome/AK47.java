@@ -10,7 +10,7 @@ import java.util.List;
 public class AK47 implements EquipableItem {
     private Player player;
     private float fireCooldown = 0;
-    private float fireRate = 0.1f;
+    private float fireRate = 0.3f;
     private int damage = 8;
     private Texture bulletTexture;
     private Texture weaponTexture;
@@ -41,10 +41,11 @@ public class AK47 implements EquipableItem {
         if (fireCooldown <= 0 && player.getGameScreen() != null) {
             Snail closest = findClosestEnemy();
             if (closest != null) {
-                bullets.add(new Bullet(bulletTexture, player.getPosition(), closest.getPosition()));
+                bullets.add(new Bullet(bulletTexture, getBarrelEndPosition(), closest.getPosition()));
                 fireCooldown = fireRate;
             }
         }
+
     }
 
     private Snail findClosestEnemy() {
@@ -64,21 +65,91 @@ public class AK47 implements EquipableItem {
         return closest;
     }
 
+    private Vector2 getBarrelEndPosition() {
+        Vector2 offset = new Vector2(player.getLastDirection()).nor().scl(weaponTexture.getWidth());
+        return new Vector2(player.getPosition()).add(offset);
+    }
+
+
     @Override
     public void render(SpriteBatch batch) {
-        // Dibujar el arma en el jugador (rotada hacia la dirección del movimiento)
         float rotation = player.getLastDirection().angleDeg();
+
+        boolean mirandoIzquierda = player.getLastDirection().x < 0;
+
+        float originX = 0f;
+        float originY = weaponTexture.getHeight() / 2f;
+
+        float drawX = player.getPosition().x;
+        float drawY = player.getPosition().y - weaponTexture.getHeight() / 2f;
+
         batch.draw(weaponTexture,
-            player.getPosition().x - weaponTexture.getWidth()/2f + 20,
-            player.getPosition().y - weaponTexture.getHeight()/2f - 10,
-            weaponTexture.getWidth()/2f, weaponTexture.getHeight()/2f,
+            drawX, drawY,
+            originX, originY,
             weaponTexture.getWidth(), weaponTexture.getHeight(),
-            1, 1, rotation, 0, 0,
-            weaponTexture.getWidth(), weaponTexture.getHeight(), false, false);
+            1, 1, rotation,
+            0, 0,
+            weaponTexture.getWidth(), weaponTexture.getHeight(),
+            false, mirandoIzquierda);
+
     }
+
+
 
 
     public List<Bullet> getBullets() {
         return bullets;
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
+    public float getFireCooldown() {
+        return fireCooldown;
+    }
+
+    public void setFireCooldown(float fireCooldown) {
+        this.fireCooldown = fireCooldown;
+    }
+
+    public float getFireRate() {
+        return fireRate;
+    }
+
+    public void setFireRate(float fireRate) {
+        this.fireRate = fireRate;
+    }
+
+    public int getDamage() {
+        return damage;
+    }
+
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+
+    public Texture getBulletTexture() {
+        return bulletTexture;
+    }
+
+    public void setBulletTexture(Texture bulletTexture) {
+        this.bulletTexture = bulletTexture;
+    }
+
+    public Texture getWeaponTexture() {
+        return weaponTexture;
+    }
+
+    public void setWeaponTexture(Texture weaponTexture) {
+        this.weaponTexture = weaponTexture;
+    }
+
+    public void setBullets(List<Bullet> bullets) {
+        this.bullets = bullets;
     }
 }
