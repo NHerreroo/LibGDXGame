@@ -119,9 +119,12 @@ public class GameScreen implements Screen {
             direction.set(touchCurrent).sub(touchOrigin);
             if (direction.len() > 10f) {
                 direction.nor();
-                player.update(delta, direction);
+            } else {
+                direction.set(0, 0);
             }
         }
+
+        player.update(delta, direction);
 
         shootCooldown -= delta;
         if (shootCooldown <= 0f && !spawner.getSnails().isEmpty()) {
