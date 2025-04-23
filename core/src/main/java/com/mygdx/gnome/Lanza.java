@@ -9,22 +9,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Lanza implements EquipableItem {
-    private Player player;
-    private float angle = 0;
-    private float rotationSpeed = 180f;
-    private float distance = 50f;
-    private int damage = 20;
-    private float damageInterval = 0.5f;
-    private float damageTimer = 0;
+    private final Player player;
+    private final Texture texture;
+    private final float rotationSpeed = 180f;
+    private final float distance = 50f;
+    private final int damage = 20;
 
+    private float angle = 0f;
     private int level = 1;
-    private List<Float> baseAngles = new ArrayList<>();
-
-    private Texture spearTexture;
+    private final List<Float> baseAngles = new ArrayList<>();
 
     public Lanza(Player player) {
-        this.player = player;
-        this.spearTexture = player.getGameScreen().game.assetManager.get("GNOME/spear.png", Texture.class);
+        this.player  = player;
+        this.texture = player.getGameScreen()
+            .game.assetManager
+            .get("GNOME/spear.png", Texture.class);
         updateBaseAngles();
     }
 
@@ -39,69 +38,66 @@ public class Lanza implements EquipableItem {
     private void updateBaseAngles() {
         baseAngles.clear();
         switch(level) {
-            case 1: baseAngles.add(0f); break;
-            case 2:
-                baseAngles.add(0f);
-                baseAngles.add(180f);
-                break;
-            case 3:
-                baseAngles.add(90f);
-                baseAngles.add(210f);
-                baseAngles.add(330f);
-                break;
-            case 4:
-                baseAngles.add(45f);
-                baseAngles.add(135f);
-                baseAngles.add(225f);
-                baseAngles.add(315f);
-                break;
+            case 1: baseAngles.add(   0f); break;
+            case 2: baseAngles.addAll(List.of(  0f, 180f)); break;
+            case 3: baseAngles.addAll(List.of( 90f, 210f, 330f)); break;
+            case 4: baseAngles.addAll(List.of( 45f, 135f, 225f, 315f)); break;
         }
     }
 
     @Override
     public void update(float delta) {
-        angle += rotationSpeed * delta;
-        damageTimer += delta;
-        if (damageTimer >= damageInterval) {
-            damageTimer = 0;
-            applyDamage();
-        }
-    }
-
-    private void applyDamage() {
-        Vector2 center = player.getPosition();
-        for (float b : baseAngles) {
-            float ang = b + angle;
-            Vector2 pos = new Vector2(
-                center.x + (float)Math.cos(Math.toRadians(ang)) * distance,
-                center.y + (float)Math.sin(Math.toRadians(ang)) * distance
-            );
-            for (Snail s: player.getGameScreen().getSpawner().getSnails()) {
-                if (pos.dst(s.getPosition()) < 20f) {
-                    s.recibirDaño(damage);
-                }
-            }
-        }
+        angle = (angle + rotationSpeed * delta) % 360f;
     }
 
     @Override
     public void render(SpriteBatch batch) {
         Vector2 center = player.getPosition();
-        for (float b : baseAngles) {
-            float ang = b + angle;
-            float rad = (float)Math.toRadians(ang);
-            float x = center.x + (float)Math.cos(rad) * distance;
-            float y = center.y + (float)Math.sin(rad) * distance;
-            float originX = spearTexture.getWidth();
-            float originY = spearTexture.getHeight()/2f;
-            batch.draw(spearTexture,
-                x - originX, y - originY,
-                originX, originY,
-                spearTexture.getWidth(), spearTexture.getHeight(),
-                1,1, ang,
-                0,0,
-                spearTexture.getWidth(), spearTexture.getHeight(),
-                false,false);
+        float halfW = texture.getWidth() * 0.5f;
+        float halfH = texture.getHeight() * 0.5f;
+
+        for (float base : baseAngles) {
+            float a   = base + angle;
+            float rad = (float)Math.toRadians(a);
+
+            // Punto sobre el que pivotar (centro del sprite)
+            float px = center.x + (float)Math.cos(rad) * distance;
+            float py = center.y + (float)Math.sin(rad) * distance;
+
+            batch.draw(
+                texture,
+                px - halfW,               // x bottom-left
+                py - halfH,               // y bottom-left
+                halfW,                    // originX: centro del sprite
+                halfH,                    // originY
+                texture.getWidth(),       // width
+                texture.getHeight(),      // height
+                1f, 1f,                   // scaleX, scaleY
+                a,                        // rotation
+                0, 0,                     // srcX, srcY
+                texture.getWidth(),       // srcWidth
+                texture.getHeight(),      // srcHeight
+                false, false              // flipX, flipY
+            );
         }
+    }
+
+
+    public List<Vector2> getHitPoints() {
+        List<Vector2> pts = new ArrayList<>();
+        Vector2 c = player.getPosition();
+        for (float base : baseAngles) {
+            float a   = base + angle;
+            float rad = (float)Math.toRadians(a);
+            pts.add(new Vector2(
+                c.x + (float)Math.cos(rad) * distance,
+                c.y + (float)Math.sin(rad) * distance
+            ));
+        }
+        return pts;
+    }
+
+    public int getDamage() {
+        return damage;
     }
 }

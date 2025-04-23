@@ -48,6 +48,7 @@ public class Main extends Game {
 
 
         assetManager.load("GNOME/Snail/1.png", Texture.class);
+        assetManager.load("GNOME/Snail/damage.png", Texture.class);
 
         assetManager.finishLoading();
 

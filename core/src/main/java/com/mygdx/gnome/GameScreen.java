@@ -280,6 +280,50 @@ public class GameScreen implements Screen {
             }
         }
 
+        for (EquipableItem item : player.getHabilidadesPermanentes()) {
+            if (item instanceof Halo) {
+                Halo halo = (Halo) item;
+                Iterator<Snail> snailIt = spawner.getSnails().iterator();
+                while (snailIt.hasNext()) {
+                    Snail snail = snailIt.next();
+                    if (player.getPosition().dst(snail.getPosition()) <= halo.getRadius()) {
+                        // aplicamos daño
+                        snail.recibirDaño(halo.getDamage());
+                        if (snail.estaMuerto()) {
+                            coins.add(new Moneda(coinTexture,
+                                snail.getPosition().x,
+                                snail.getPosition().y));
+                            snailIt.remove();
+                        }
+                    }
+                }
+            }
+        }
+
+        // Colisiones de la Lanza
+        for (EquipableItem item : player.getHabilidadesPermanentes()) {
+            if (item instanceof Lanza) {
+                Lanza lanza = (Lanza) item;
+                for (Vector2 hit : lanza.getHitPoints()) {
+                    Iterator<Snail> it = spawner.getSnails().iterator();
+                    while (it.hasNext()) {
+                        Snail snail = it.next();
+                        if (hit.dst(snail.getPosition()) < 20f) {
+                            snail.recibirDaño(lanza.getDamage());
+                            if (snail.estaMuerto()) {
+                                coins.add(new Moneda(coinTexture,
+                                    snail.getPosition().x,
+                                    snail.getPosition().y));
+                                it.remove();
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+
         // Recogida de monedas por el jugador
         Iterator<Moneda> coinIt = coins.iterator();
         while (coinIt.hasNext()) {
