@@ -7,11 +7,11 @@ import com.badlogic.gdx.math.Vector2;
 public class Halo implements EquipableItem {
     private final Player player;
     private final Texture texture;
-    private final float baseRadius = 50f;
-    private final int damage = 2;
+    private final float baseRadius = 30f;
+    private final int damage = 1;
     private final float damageInterval = 1f;
     private final float pulseSpeed = 3f;
-    private final float pulseMax = 10f;
+    private final float pulseMax = 5f;
 
     private float pulseTimer = 0f;
     private float damageTimer = 0f;
