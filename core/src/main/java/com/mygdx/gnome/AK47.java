@@ -2,6 +2,7 @@ package com.mygdx.gnome;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
@@ -15,8 +16,8 @@ public class AK47 implements EquipableItem {
     private int damage = 8;
 
     private int level = 1;
-    private List<Float> baseAngles = new ArrayList<>();
-    private float distance = 50f;        // distancia de cada arma al jugador
+    private List<Float> baseAngles = new ArrayList<>();   // offsets en grados
+    private float distance = 50f;                         // distancia al jugador
 
     private Texture bulletTexture;
     private Texture weaponTexture;
@@ -24,12 +25,14 @@ public class AK47 implements EquipableItem {
 
     public AK47(Player player) {
         this.player = player;
-        this.bulletTexture = player.getGameScreen().game.assetManager.get("GNOME/bullet2.png", Texture.class);
-        this.weaponTexture = player.getGameScreen().game.assetManager.get("GNOME/ak47.png", Texture.class);
+        this.bulletTexture = player.getGameScreen().game.assetManager
+            .get("GNOME/bullet2.png", Texture.class);
+        this.weaponTexture = player.getGameScreen().game.assetManager
+            .get("GNOME/ak47.png", Texture.class);
         updateBaseAngles();
     }
 
-    /** Sube nivel hasta 6 */
+    /** Sube nivel hasta 6 y recalcula offsets */
     public void upgrade() {
         if (level < 6) {
             level++;
@@ -39,7 +42,7 @@ public class AK47 implements EquipableItem {
 
     private void updateBaseAngles() {
         baseAngles.clear();
-        // repartir las armas uniformemente alrededor de 360°
+        // repartir uniformemente alrededor de 360°
         for (int i = 0; i < level; i++) {
             baseAngles.add(i * (360f / level));
         }
@@ -48,49 +51,60 @@ public class AK47 implements EquipableItem {
     @Override
     public void update(float delta) {
         fireCooldown -= delta;
-        // actualizar balas
+
+        // actualizar balas vivas
         Iterator<Bullet> it = bullets.iterator();
         while (it.hasNext()) {
             Bullet b = it.next();
             b.update(delta);
-            if (b.getPosition().dst(player.getPosition()) > 500) it.remove();
+            if (b.getPosition().dst(player.getPosition()) > 500) {
+                it.remove();
+            }
         }
-        // disparar desde cada arma
+
+        // disparo en ráfaga si hay enemigos
         if (fireCooldown <= 0) {
-            Snail target = findClosestEnemy();
-            if (target != null) {
+            Snail any = findClosestEnemy();
+            if (any != null) {
                 Vector2 center = player.getPosition();
-                for (float ang : baseAngles) {
-                    Vector2 start = new Vector2(
-                        center.x + (float)Math.cos(Math.toRadians(ang)) * distance,
-                        center.y + (float)Math.sin(Math.toRadians(ang)) * distance
-                    );
-                    bullets.add(new Bullet(bulletTexture, start, target.getPosition()));
+                // ángulo de mirada del jugador (última dirección de movimiento)
+                Vector2 lastDir = player.getLastDirection().nor();
+                float lookAngle = MathUtils.atan2(lastDir.y, lastDir.x) * MathUtils.radiansToDegrees;
+
+                for (float offset : baseAngles) {
+                    float actualAngle = lookAngle + offset;
+                    float rad = actualAngle * MathUtils.degreesToRadians;
+
+                    // dirección de disparo
+                    Vector2 dir = new Vector2(MathUtils.cos(rad), MathUtils.sin(rad)).nor();
+                    // punto de inicio
+                    Vector2 start = new Vector2(center).mulAdd(dir, distance);
+                    // fake target un paso adelante en dir
+                    Vector2 fakeTarget = new Vector2(start).mulAdd(dir, 1f);
+
+                    bullets.add(new Bullet(bulletTexture, start, fakeTarget));
                 }
                 fireCooldown = fireRate;
             }
         }
     }
 
-    private Snail findClosestEnemy() {
-        Snail best = null;
-        float md = Float.MAX_VALUE;
-        for (Snail s : player.getGameScreen().getSpawner().getSnails()) {
-            float d = player.getPosition().dst2(s.getPosition());
-            if (d < md) { md = d; best = s; }
-        }
-        return best;
-    }
-
     @Override
     public void render(SpriteBatch batch) {
         Vector2 center = player.getPosition();
-        // dibujar cada arma alrededor del jugador
-        for (float ang : baseAngles) {
-            float rad = (float)Math.toRadians(ang);
-            float x = center.x + (float)Math.cos(rad) * distance;
-            float y = center.y + (float)Math.sin(rad) * distance;
-            // rotar la textura para apuntar hacia afuera
+
+        // ángulo de mirada
+        Vector2 lastDir = player.getLastDirection().nor();
+        float lookAngle = MathUtils.atan2(lastDir.y, lastDir.x) * MathUtils.radiansToDegrees;
+
+        // dibujar cada arma girada según lookAngle + offset
+        for (float offset : baseAngles) {
+            float actualAngle = lookAngle + offset;
+            float rad = actualAngle * MathUtils.degreesToRadians;
+
+            float x = center.x + MathUtils.cos(rad) * distance;
+            float y = center.y + MathUtils.sin(rad) * distance;
+
             batch.draw(
                 weaponTexture,
                 x - weaponTexture.getWidth()/2f,
@@ -99,18 +113,32 @@ public class AK47 implements EquipableItem {
                 weaponTexture.getHeight()/2f,
                 weaponTexture.getWidth(),
                 weaponTexture.getHeight(),
-                1,1,
-                ang,
-                0,0,
+                1f, 1f,
+                actualAngle,
+                0, 0,
                 weaponTexture.getWidth(),
                 weaponTexture.getHeight(),
-                false,false
+                false, false
             );
         }
+
         // render de las balas
         for (Bullet b : bullets) {
             b.render(batch);
         }
+    }
+
+    private Snail findClosestEnemy() {
+        Snail best = null;
+        float md = Float.MAX_VALUE;
+        for (Snail s : player.getGameScreen().getSpawner().getSnails()) {
+            float d = player.getPosition().dst2(s.getPosition());
+            if (d < md) {
+                md = d;
+                best = s;
+            }
+        }
+        return best;
     }
 
     public List<Bullet> getBullets() {

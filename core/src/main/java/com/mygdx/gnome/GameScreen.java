@@ -42,6 +42,9 @@ public class GameScreen implements Screen {
     Viewport hudViewport;
 
     Texture bulletTexture;
+
+    private int round = 1;
+
     List<Bullet> bullets = new ArrayList<>();
     float shootCooldown = 0f;
     float shootInterval = 0.5f; // dispara cada 1 segundo
@@ -78,6 +81,15 @@ public class GameScreen implements Screen {
         hud = new HUD(virtualWidth, VIRTUAL_HEIGHT, player);
         tienda = new Tienda(virtualWidth, VIRTUAL_HEIGHT, player); // MODIFICADO
         spawner = new Spawner(snailTexture, virtualWidth, VIRTUAL_HEIGHT);
+        spawner.setRound(round);
+    }
+    public void nextRound() {
+        round++;
+        spawner.setRound(round); // actualizar spawner con la nueva ronda
+    }
+
+    public int getRound() {
+        return round;
     }
 
     @Override

@@ -36,6 +36,7 @@ public class Main extends Game {
         assetManager.load("GNOME/robot.png", Texture.class);
         assetManager.load("GNOME/spear.png", Texture.class);
         assetManager.load("GNOME/ak47.png", Texture.class);
+        assetManager.load("GNOME/halo.png", Texture.class);
 
 
 

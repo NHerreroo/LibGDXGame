@@ -12,11 +12,13 @@ public class Spawner {
     private Texture snailTexture;
     private List<Snail> snails;
     private float spawnTimer = 0f;
-    private float spawnInterval = 3f; // cada 3 segundos
-    private int maxSnails = 10;
+    private float spawnInterval = 3f;
+    // private int maxSnails = 10;  // ya no lo usamos
 
     private float mapWidth;
     private float mapHeight;
+
+    private int round = 1;
 
     public Spawner(Texture snailTexture, float mapWidth, float mapHeight) {
         this.snailTexture = snailTexture;
@@ -25,16 +27,29 @@ public class Spawner {
         this.mapHeight = mapHeight;
     }
 
-    public void update(float delta, Vector2 playerPosition, boolean tiendaActiva) {
+    public void setRound(int round) {
+        this.round = round;
+    }
 
+    public List<Snail> getSnails() {
+        return snails;
+    }
+
+    public void eliminarTodos() {
+        snails.clear();
+    }
+
+    public void update(float delta, Vector2 playerPosition, boolean tiendaActiva) {
         if (tiendaActiva) return;
 
         spawnTimer += delta;
-
-        //if (spawnTimer >= spawnInterval && snails.size() < maxSnails)   LIMITE DE CARACOLES
         if (spawnTimer >= spawnInterval) {
             spawnTimer = 0f;
-            spawnSnail();
+            // --- NUEVO: generar 2^(round-1) caracoles esta vez ---
+            int count = (int)Math.pow(2, round - 1);
+            for (int i = 0; i < count; i++) {
+                spawnSnail();
+            }
         }
 
         for (Snail snail : snails) {
@@ -43,9 +58,8 @@ public class Spawner {
     }
 
     private void spawnSnail() {
-        float x = (float) Math.random() * mapWidth;
-        float y = (float) Math.random() * mapHeight;
-
+        float x = (float)Math.random() * mapWidth;
+        float y = (float)Math.random() * mapHeight;
         snails.add(new Snail(snailTexture, x, y));
     }
 
@@ -54,17 +68,4 @@ public class Spawner {
             snail.render(batch);
         }
     }
-
-    public List<Snail> getSnails() {
-        return snails;
-    }
-
-    public void eliminarTodos() {
-        Iterator<Snail> it = snails.iterator();
-        while (it.hasNext()) {
-            Snail snail = it.next();
-            it.remove();
-        }
-    }
-
 }

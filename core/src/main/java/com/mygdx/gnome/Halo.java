@@ -1,10 +1,9 @@
 package com.mygdx.gnome;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+
 import java.util.List;
 
 public class Halo implements EquipableItem {
@@ -18,26 +17,29 @@ public class Halo implements EquipableItem {
     private boolean expanding = true;
     private int damage = 15;
 
+    // Nueva textura para el sprite del halo
+    private Texture haloTexture;
+
     public Halo(Player player) {
         this.player = player;
+        // Carga tu textura; reemplaza "GNOME/halo.png" por la ruta que quieras
+        this.haloTexture = player.getGameScreen()
+            .game.assetManager
+            .get("GNOME/halo.png", Texture.class);
     }
 
     @Override
     public void update(float delta) {
         // Efecto de pulso
         if (expanding) {
-            currentPulse += pulseSpeed;
-            if (currentPulse >= pulseSize) {
-                expanding = false;
-            }
+            currentPulse += pulseSpeed * delta;
+            if (currentPulse >= pulseSize) expanding = false;
         } else {
-            currentPulse -= pulseSpeed;
-            if (currentPulse <= 0) {
-                expanding = true;
-            }
+            currentPulse -= pulseSpeed * delta;
+            if (currentPulse <= 0) expanding = true;
         }
 
-        // Daño a enemigos
+        // Daño a enemigos cada damageInterval
         timer += delta;
         if (timer >= damageInterval) {
             timer = 0;
@@ -49,8 +51,11 @@ public class Halo implements EquipableItem {
         if (player.getGameScreen() == null) return;
 
         List<Snail> snails = player.getGameScreen().getSpawner().getSnails();
+        Vector2 posPlayer = player.getPosition();
+        float effectiveRadius = radius;
+
         for (Snail snail : snails) {
-            if (player.getPosition().dst(snail.getPosition()) <= radius) {
+            if (posPlayer.dst(snail.getPosition()) <= effectiveRadius) {
                 snail.recibirDaño(damage);
             }
         }
@@ -58,26 +63,18 @@ public class Halo implements EquipableItem {
 
     @Override
     public void render(SpriteBatch batch) {
-        ShapeRenderer sr = new ShapeRenderer();
-        try {
-            sr.setProjectionMatrix(batch.getProjectionMatrix());
-            Gdx.gl.glEnable(GL20.GL_BLEND);
-            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        Vector2 pos = player.getPosition();
+        // Escala para que pulse igual que antes
+        float scale = (radius + currentPulse) * 2f / haloTexture.getWidth();
 
-            // Aura interior con efecto de pulso
-            sr.begin(ShapeRenderer.ShapeType.Filled);
-            sr.setColor(0, 0.8f, 0.8f, 0.35f);
-            sr.circle(player.getPosition().x, player.getPosition().y, radius + currentPulse);
-            sr.end();
-
-            // Borde del halo con efecto de pulso
-            sr.begin(ShapeRenderer.ShapeType.Line);
-            sr.setColor(0, 1, 1, 0.8f);
-            sr.circle(player.getPosition().x, player.getPosition().y, radius + currentPulse);
-            sr.end();
-        } finally {
-            sr.dispose();
-            Gdx.gl.glDisable(GL20.GL_BLEND);
-        }
+        // -- NO volver a llamar a batch.begin() ni batch.end() aquí --
+        batch.draw(
+            haloTexture,
+            pos.x - (haloTexture.getWidth()  * scale) / 2f,
+            pos.y - (haloTexture.getHeight() * scale) / 2f,
+            haloTexture.getWidth()  * scale,
+            haloTexture.getHeight() * scale
+        );
     }
+
 }
