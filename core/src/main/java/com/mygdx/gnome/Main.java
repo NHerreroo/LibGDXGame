@@ -25,9 +25,15 @@ public class Main extends Game {
         batch = new SpriteBatch();
         assetManager = new AssetManager();
 
+        assetManager.load("GNOME/Player/1.png", Texture.class);
+        assetManager.load("GNOME/Player/2.png", Texture.class);
+        assetManager.load("GNOME/Player/3.png", Texture.class);
+        assetManager.load("GNOME/Player/w1.png", Texture.class);
+        assetManager.load("GNOME/Player/w2.png", Texture.class);
+        assetManager.load("GNOME/Player/w3.png", Texture.class);
+
 
         assetManager.load("GNOME/Map/Map.png", Texture.class);
-        assetManager.load("GNOME/Player/1.png", Texture.class);
         assetManager.load("GNOME/bullet.png", Texture.class);
         assetManager.load("GNOME/joysk1.png", Texture.class);
         assetManager.load("GNOME/joysk2.png", Texture.class);
@@ -37,6 +43,7 @@ public class Main extends Game {
         assetManager.load("GNOME/spear.png", Texture.class);
         assetManager.load("GNOME/ak47.png", Texture.class);
         assetManager.load("GNOME/halo.png", Texture.class);
+        assetManager.load("GNOME/Coin.png", Texture.class);
 
 
 

@@ -58,6 +58,7 @@ public class HUD {
         font.draw(batch, "Velocidad: " + player.getVelocidad(), 200, baseY -40);
         font.draw(batch, "Ataque: " + player.getAtaque(), 200, baseY -80);
         font.draw(batch, "Cadencia: " + player.getCadencia(), 200, baseY -120);
+        font.draw(batch, "Dinero: " + player.getDinero(), 200, baseY -160);
 
         batch.end();
     }

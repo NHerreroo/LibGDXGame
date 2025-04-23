@@ -87,4 +87,44 @@ public class Player {
     public List<EquipableItem> getHabilidadesPermanentes() {
         return habilidadesPermanentes;
     }
+
+    public void incrementarVelocidad(float v) {
+        float actV = getVelocidad();
+        setSpeed(actV += v);
+    }
+
+    public void incrementarAtaque(int i) {
+        int actAtk = getAtaque();
+        setAtaque(actAtk += i);
+    }
+
+    public void mejorarCadencia(float v) {
+        float actCad = getCadencia();
+        setCadencia(actCad -= v);
+    }
+
+    public void incrementarVidas(int i) {
+        int actVid = getVidas();
+        setVidas(actVid += i);
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public void setVidas(int vidas) {
+        this.vidas = vidas;
+    }
+
+    public void setAtaque(int ataque) {
+        this.ataque = ataque;
+    }
+
+    public void setCadencia(float cadencia) {
+        this.cadencia = cadencia;
+    }
+
+    public void setDinero(int dinero) {
+        this.dinero = dinero;
+    }
 }

@@ -49,6 +49,8 @@ public class GameScreen implements Screen {
     float shootCooldown = 0f;
     float shootInterval = 0.5f; // dispara cada 1 segundo
 
+    private Texture    coinTexture;
+    private List<Moneda> coins = new ArrayList<>();
 
     public GameScreen(final Main gam) {
         this.game = gam;
@@ -61,6 +63,7 @@ public class GameScreen implements Screen {
         touchBg = game.assetManager.get("GNOME/joysk1.png", Texture.class);
         touchKnob = game.assetManager.get("GNOME/joysk2.png", Texture.class);
         bulletTexture = new Texture("GNOME/bullet.png");
+        coinTexture = new Texture("GNOME/Coin.png");
 
 
         float mapAspectRatio = (float) mapTexture.getWidth() / mapTexture.getHeight();
@@ -149,6 +152,10 @@ public class GameScreen implements Screen {
             bullet.render(batch);
         }
 
+        for (Moneda m : coins) {
+            m.render(batch);
+        }
+
         for (EquipableItem item : player.getHabilidadesPermanentes()) {
             if (item instanceof AK47) {
                 for (Bullet bullet : ((AK47)item).getBullets()) {
@@ -201,15 +208,17 @@ public class GameScreen implements Screen {
         Iterator<Bullet> bulletIt = bullets.iterator();
         while (bulletIt.hasNext()) {
             Bullet bullet = bulletIt.next();
-
             Iterator<Snail> snailIt = spawner.getSnails().iterator();
             while (snailIt.hasNext()) {
                 Snail snail = snailIt.next();
-
                 if (bullet.getPosition().dst(snail.getPosition()) < 20f) {
+                    // Daño de la bala
                     snail.recibirDaño(player.getAtaque());
                     bulletIt.remove();
                     if (snail.estaMuerto()) {
+                        coins.add(new Moneda(coinTexture,
+                            snail.getPosition().x,
+                            snail.getPosition().y));
                         snailIt.remove();
                     }
                     break;
@@ -223,15 +232,16 @@ public class GameScreen implements Screen {
                 Iterator<Bullet> akBulletIt = ((AK47)item).getBullets().iterator();
                 while (akBulletIt.hasNext()) {
                     Bullet bullet = akBulletIt.next();
-
                     Iterator<Snail> snailIt = spawner.getSnails().iterator();
                     while (snailIt.hasNext()) {
                         Snail snail = snailIt.next();
-
                         if (bullet.getPosition().dst(snail.getPosition()) < 20f) {
                             snail.recibirDaño(((AK47)item).getDamage());
                             akBulletIt.remove();
                             if (snail.estaMuerto()) {
+                                coins.add(new Moneda(coinTexture,
+                                    snail.getPosition().x,
+                                    snail.getPosition().y));
                                 snailIt.remove();
                             }
                             break;
@@ -246,17 +256,18 @@ public class GameScreen implements Screen {
             if (item instanceof Robot) {
                 for (Robot.Missile missile : ((Robot)item).getMissiles()) {
                     if (missile.hasReachedTarget()) {
-                        // El daño ya se aplicó en el update del misil
+                        // El daño ya se aplicó en update()
                         continue;
                     }
-
                     Iterator<Snail> snailIt = spawner.getSnails().iterator();
                     while (snailIt.hasNext()) {
                         Snail snail = snailIt.next();
-
                         if (missile.getPosition().dst(snail.getPosition()) < 20f) {
                             missile.applyDamage();
                             if (snail.estaMuerto()) {
+                                coins.add(new Moneda(coinTexture,
+                                    snail.getPosition().x,
+                                    snail.getPosition().y));
                                 snailIt.remove();
                             }
                             break;
@@ -265,7 +276,18 @@ public class GameScreen implements Screen {
                 }
             }
         }
+
+        // Recogida de monedas por el jugador
+        Iterator<Moneda> coinIt = coins.iterator();
+        while (coinIt.hasNext()) {
+            Moneda m = coinIt.next();
+            if (player.getPosition().dst(m.getPosition()) <= m.getPickupRadius()) {
+                player.sumarDinero(m.getValue());
+                coinIt.remove();
+            }
+        }
     }
+
 
     private Snail findClosestEnemy() {
         Snail closest = null;
