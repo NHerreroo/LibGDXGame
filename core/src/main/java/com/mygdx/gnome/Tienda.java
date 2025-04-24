@@ -41,7 +41,7 @@ public class Tienda {
     // Cuenta cuántas veces se ha comprado cada tipo de ítem
     private Map<String,Integer> purchaseCount = new HashMap<>();
 
-    public Tienda(float width, float height, Player player) {
+    public Tienda(float width, float height, Player player, BitmapFont gameFont) {
         this.virtualWidth  = width;
         this.virtualHeight = height;
         this.player        = player;
@@ -51,14 +51,14 @@ public class Tienda {
         camera.position.set(width/2f, height/2f, 0);
         camera.update();
 
-        font = new BitmapFont();
+        this.font = gameFont;
+        this.itemFont = gameFont;
         font.getData().setScale(4f);
-        itemFont = new BitmapFont();
         itemFont.getData().setScale(2f);
 
         shapeRenderer = new ShapeRenderer();
 
-        generarItems();  // inicializa items[] y purchased[]
+        generarItems();
     }
 
     public void show() {
@@ -82,11 +82,6 @@ public class Tienda {
         }
     }
 
-    /**
-     * Calcula un precio base para el ítem y lo escala
-     * según cuántas veces ya se ha comprado:
-     * precio = base * (1 + 0.5 * vecesComprado)
-     */
     private int calcularPrecio(String nombre) {
         int base;
         switch (nombre) {

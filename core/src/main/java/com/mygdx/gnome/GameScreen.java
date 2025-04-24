@@ -81,8 +81,8 @@ public class GameScreen implements Screen {
         hudCamera.update();
 
         player = new Player(playerTexture, virtualWidth / 2f, VIRTUAL_HEIGHT / 2f, this);
-        hud = new HUD(virtualWidth, VIRTUAL_HEIGHT, player);
-        tienda = new Tienda(virtualWidth, VIRTUAL_HEIGHT, player); // MODIFICADO
+        hud = new HUD(virtualWidth, VIRTUAL_HEIGHT, player,game.getSmallFont());
+        tienda = new Tienda(virtualWidth, VIRTUAL_HEIGHT, player, game.getSmallFont()); // MODIFICADO
         spawner = new Spawner(snailTexture, virtualWidth, VIRTUAL_HEIGHT);
         spawner.setRound(round);
     }
@@ -320,6 +320,22 @@ public class GameScreen implements Screen {
                         }
                     }
                 }
+            }
+        }
+
+
+        Iterator<Snail> snailIt2 = spawner.getSnails().iterator();
+        while (snailIt2.hasNext()) {
+            Snail snail = snailIt2.next();
+            if (player.getPosition().dst(snail.getPosition()) < 20f) {
+                // Restamos una vida
+                player.incrementarVidas(-1);
+                snailIt2.remove();
+                if (player.getVidas() <= 0) {
+                    game.setScreen(new GameOverScreen(game));
+                    dispose();
+                }
+                break;
             }
         }
 

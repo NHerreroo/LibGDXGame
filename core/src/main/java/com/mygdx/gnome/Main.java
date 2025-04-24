@@ -1,37 +1,31 @@
 package com.mygdx.gnome;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.utils.ScreenUtils;
 
-/** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends Game {
     SpriteBatch batch;
     BitmapFont smallFont, bigFont;
-
     AssetManager assetManager;
 
     @Override
     public void create() {
-
         batch = new SpriteBatch();
         assetManager = new AssetManager();
 
+        // === Carga de texturas ===
         assetManager.load("GNOME/Player/1.png", Texture.class);
         assetManager.load("GNOME/Player/2.png", Texture.class);
         assetManager.load("GNOME/Player/3.png", Texture.class);
         assetManager.load("GNOME/Player/w1.png", Texture.class);
         assetManager.load("GNOME/Player/w2.png", Texture.class);
         assetManager.load("GNOME/Player/w3.png", Texture.class);
-
 
         assetManager.load("GNOME/Map/Map.png", Texture.class);
         assetManager.load("GNOME/bullet.png", Texture.class);
@@ -45,13 +39,36 @@ public class Main extends Game {
         assetManager.load("GNOME/halo.png", Texture.class);
         assetManager.load("GNOME/Coin.png", Texture.class);
 
-
-
         assetManager.load("GNOME/Snail/1.png", Texture.class);
         assetManager.load("GNOME/Snail/damage.png", Texture.class);
 
-        assetManager.finishLoading();
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(
+            Gdx.files.internal("GNOME/DynaPuff.ttf")
+        );
+        FreeTypeFontGenerator.FreeTypeFontParameter param =
+            new FreeTypeFontGenerator.FreeTypeFontParameter();
 
+        // Fuente pequeña
+        param.size = 24;
+        param.color = Color.WHITE;
+        smallFont = generator.generateFont(param);
+
+        // Fuente grande
+        param.size = 48;
+        param.color = Color.WHITE;
+        bigFont = generator.generateFont(param);
+
+        generator.dispose();
+
+        assetManager.finishLoading();
         this.setScreen(new MainMenuScreen(this));
+    }
+
+    public BitmapFont getSmallFont() {
+        return smallFont;
+    }
+
+    public BitmapFont getBigFont() {
+        return bigFont;
     }
 }
