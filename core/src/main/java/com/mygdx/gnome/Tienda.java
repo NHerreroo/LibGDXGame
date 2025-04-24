@@ -17,8 +17,12 @@ import java.util.Map;
 public class Tienda {
     private OrthographicCamera camera;
     private Viewport viewport;
-    private BitmapFont font;
-    private BitmapFont itemFont;
+    private BitmapFont fontitem;
+
+    private BitmapFont shopfont;
+
+
+    private BitmapFont itemFontshop;
     private ShapeRenderer shapeRenderer;
 
     private float virtualWidth;
@@ -41,7 +45,7 @@ public class Tienda {
     // Cuenta cuántas veces se ha comprado cada tipo de ítem
     private Map<String,Integer> purchaseCount = new HashMap<>();
 
-    public Tienda(float width, float height, Player player, BitmapFont gameFont) {
+    public Tienda(float width, float height, Player player, BitmapFont titleFont, BitmapFont itemFont ) {
         this.virtualWidth  = width;
         this.virtualHeight = height;
         this.player        = player;
@@ -51,10 +55,10 @@ public class Tienda {
         camera.position.set(width/2f, height/2f, 0);
         camera.update();
 
-        this.font = gameFont;
-        this.itemFont = gameFont;
-        font.getData().setScale(4f);
-        itemFont.getData().setScale(2f);
+        this.shopfont = titleFont;
+        this.itemFontshop = itemFont;
+        shopfont.getData().setScale(4f);
+        itemFontshop.getData().setScale(2f);
 
         shapeRenderer = new ShapeRenderer();
 
@@ -236,25 +240,25 @@ public class Tienda {
         // === TEXTOS ===
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        font.setColor(Color.WHITE);
-        font.draw(batch, "Tienda", virtualWidth/2f - 80, virtualHeight - 80);
+        shopfont.setColor(Color.WHITE);
+        shopfont.draw(batch, "Tienda", virtualWidth/2f - 80, virtualHeight - 80);
 
         for (int i = 0; i < SLOT_COUNT; i++) {
             float x = virtualWidth/2f - botonWidth/2f + 20;
             float y = virtualHeight - 200f - i * (botonHeight + 40f) + 60;
             if (purchased[i]) {
-                itemFont.setColor(Color.GRAY);
-                itemFont.draw(batch, "COMPRADO", x, y);
+                itemFontshop.setColor(Color.GRAY);
+                itemFontshop.draw(batch, "COMPRADO", x, y);
             } else {
-                itemFont.setColor(Color.WHITE);
-                itemFont.draw(batch,
+                itemFontshop.setColor(Color.WHITE);
+                itemFontshop.draw(batch,
                     items[i].nombre + " - $" + items[i].precio,
                     x, y);
             }
         }
-        itemFont.setColor(Color.WHITE);
-        itemFont.draw(batch, "REROLL ($" + rerollCost + ")", rx2 + 60, ry2 + 60);
-        itemFont.draw(batch, "SIGUIENTE", sx2 + 60, sy2 + 60);
+        itemFontshop.setColor(Color.WHITE);
+        itemFontshop.draw(batch, "REROLL ($" + rerollCost + ")", rx2 + 60, ry2 + 60);
+        itemFontshop.draw(batch, "SIGUIENTE", sx2 + 60, sy2 + 60);
         batch.end();
     }
 

@@ -48,12 +48,10 @@ public class Main extends Game {
         FreeTypeFontGenerator.FreeTypeFontParameter param =
             new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-        // Fuente pequeña
         param.size = 24;
         param.color = Color.WHITE;
         smallFont = generator.generateFont(param);
 
-        // Fuente grande
         param.size = 48;
         param.color = Color.WHITE;
         bigFont = generator.generateFont(param);
