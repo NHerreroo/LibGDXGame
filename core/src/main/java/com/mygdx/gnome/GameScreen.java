@@ -374,4 +374,8 @@ public class GameScreen implements Screen {
     public Spawner getSpawner() {
         return spawner;
     }
+
+    public List<EquipableItem> getHabilidadesPermanentes() {
+        return player.getHabilidadesPermanentes();
+    }
 }
