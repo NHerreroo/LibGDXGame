@@ -51,6 +51,17 @@ public class Main extends Game {
 
         assetManager.finishLoading();
 
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("GNOME/DynaPuff.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter paramSmall = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        paramSmall.size = 24;
+        smallFont = generator.generateFont(paramSmall);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter paramBig = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        paramBig.size = 48;
+        bigFont = generator.generateFont(paramBig);
+
+        generator.dispose();
+
         this.setScreen(new MainMenuScreen(this));
     }
 }
