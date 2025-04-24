@@ -20,7 +20,7 @@ public class MainMenuScreen implements Screen {
         camera.setToOrtho(false, 800, 480);
 
         // Cargar el fondo de mapa
-        mapTexture = game.assetManager.get("GNOME/Map/Map.png", Texture.class);  // :contentReference[oaicite:0]{index=0}&#8203;:contentReference[oaicite:1]{index=1}
+        mapTexture = game.assetManager.get("GNOME/Map/Map.png", Texture.class);
 
         // Obtener fuentes
         titleFont = game.getTitleFont();
@@ -82,7 +82,6 @@ public class MainMenuScreen implements Screen {
     public void resume() { }
 
     @Override
-    public void dispose() {
-        mapTexture.dispose();
+    public void dispose(){
     }
 }
