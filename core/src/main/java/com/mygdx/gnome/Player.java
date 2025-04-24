@@ -141,4 +141,10 @@ public class Player {
     public List<EquipableItem> getHabilidadesPermanentes() {
         return habilidadesPermanentes;
     }
+
+    public void restarVida(int cantidad) {
+        vidas -= cantidad;
+        if (vidas < 0) vidas = 0;
+    }
+
 }

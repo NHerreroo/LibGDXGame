@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-public class MainMenuScreen implements Screen {
+public class GameOver implements Screen {
     final Main game;
     OrthographicCamera camera;
     Viewport viewport;
@@ -20,11 +20,11 @@ public class MainMenuScreen implements Screen {
     float virtualHeight = 720f;
     float virtualWidth;
 
-    public MainMenuScreen(final Main gam) {
+    public GameOver(final Main gam) {
         game = gam;
 
         mapTexture = game.assetManager.get("GNOME/Map/Map.png", Texture.class);
-        titleTexture = game.assetManager.get("GNOME/TITLE.png", Texture.class);
+        titleTexture = game.assetManager.get("GNOME/gameover.png", Texture.class);
         touchTexture = game.assetManager.get("GNOME/TOUCH.png", Texture.class);
 
         float aspectRatio = (float) mapTexture.getWidth() / mapTexture.getHeight();

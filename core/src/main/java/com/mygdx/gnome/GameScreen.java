@@ -333,6 +333,21 @@ public class GameScreen implements Screen {
                 coinIt.remove();
             }
         }
+
+        Iterator<Snail> snailIt2 = spawner.getSnails().iterator();
+        while (snailIt2.hasNext()) {
+            Snail snail = snailIt2.next();
+            if (player.getPosition().dst(snail.getPosition()) < 20f) {
+                player.incrementarVidas(-1);
+                snailIt2.remove();
+                if (player.getVidas() <= 0) {
+                    game.setScreen(new GameOver(game));
+                    dispose();
+                }
+                break;
+            }
+        }
+
     }
 
 
