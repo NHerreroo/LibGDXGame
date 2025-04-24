@@ -1,3 +1,4 @@
+// core/src/main/java/com/mygdx/gnome/Tienda.java
 package com.mygdx.gnome;
 
 import com.badlogic.gdx.Gdx;
@@ -10,9 +11,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class Tienda {
     private OrthographicCamera camera;
@@ -42,10 +40,14 @@ public class Tienda {
 
     private Player player;
 
+<<<<<<< HEAD
     // Cuenta cuántas veces se ha comprado cada tipo de ítem
     private Map<String,Integer> purchaseCount = new HashMap<>();
 
     public Tienda(float width, float height, Player player, BitmapFont titleFont, BitmapFont itemFont ) {
+=======
+    public Tienda(float width, float height, Player player) {
+>>>>>>> parent of 8890a7c (amai)
         this.virtualWidth  = width;
         this.virtualHeight = height;
         this.player        = player;
@@ -74,33 +76,31 @@ public class Tienda {
     }
 
     private void generarItems() {
+        // Incluimos ahora también las mejoras de stats
         String[] nombres = {
             "LANZA","HALO","ROBOT","AK47",
             "VELOCIDAD","DAÑO","CADENCIA","VIDA"
         };
         for (int i = 0; i < SLOT_COUNT; i++) {
             String nombre = nombres[(int)(Math.random() * nombres.length)];
-            int precio  = calcularPrecio(nombre);
-            items[i]    = new Item(nombre, precio);
-            purchased[i]= false;
+            int precio = calcularPrecio(nombre);
+            items[i] = new Item(nombre, precio);
+            purchased[i] = false;
         }
     }
 
     private int calcularPrecio(String nombre) {
-        int base;
         switch (nombre) {
-            case "LANZA":     base = 10; break;
-            case "HALO":      base = 10; break;
-            case "ROBOT":     base = 20; break;
-            case "AK47":      base = 20; break;
-            case "VELOCIDAD": base = 10; break;
-            case "DAÑO":      base = 10; break;
-            case "CADENCIA":  base = 10; break;
-            case "VIDA":      base = 10; break;
-            default:          base = 20; break;
+            case "LANZA":     return 10;
+            case "HALO":      return 10;
+            case "ROBOT":     return 20;
+            case "AK47":      return 20;
+            case "VELOCIDAD": return 10;
+            case "DAÑO":      return 10;
+            case "CADENCIA":  return 10;
+            case "VIDA":      return 10;
+            default:          return 20;
         }
-        int times = purchaseCount.getOrDefault(nombre, 0);
-        return Math.round(base * (1f + 0.5f * times));
     }
 
     public void render(SpriteBatch batch) {
@@ -133,13 +133,6 @@ public class Tienda {
 
                     // Descontar dinero
                     player.restarDinero(items[i].precio);
-
-                    // Registrar compra para subir precio la próxima vez
-                    purchaseCount.put(
-                        items[i].nombre,
-                        purchaseCount.getOrDefault(items[i].nombre, 0) + 1
-                    );
-
                     // Aplicar la compra según el tipo
                     switch (items[i].nombre) {
                         case "LANZA":

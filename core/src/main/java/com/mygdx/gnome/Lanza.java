@@ -27,6 +27,7 @@ public class Lanza implements EquipableItem {
         updateBaseAngles();
     }
 
+    /** Sube de nivel hasta 4 */
     public void upgrade() {
         if (level < 4) {
             level++;
