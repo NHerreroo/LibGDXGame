@@ -15,8 +15,8 @@ public class Player {
     private float speed = 50f;
     private int vidas = 3;
     private int ataque = 10;
-    private float cadencia = 1.8f;
-    private int dinero = 300;
+    private float cadencia = 1.5f;
+    private int dinero = 10;
     private GameScreen gameScreen;
     private List<EquipableItem> habilidadesPermanentes = new ArrayList<>();
 

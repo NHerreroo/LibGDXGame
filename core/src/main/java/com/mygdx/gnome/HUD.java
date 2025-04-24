@@ -30,7 +30,7 @@ public class HUD {
         this.virtualWidth = width;
         this.virtualHeight = height;
         this.player = player;
-        this.timeLeft = 10f;
+        this.timeLeft = 60f;
 
         hudCamera = new OrthographicCamera();
         hudViewport = new FillViewport(width, height, hudCamera);
@@ -102,7 +102,7 @@ public class HUD {
     }
 
     public void resetTimeLeft() {
-        timeLeft = 10f; // O el valor inicial que desees
+        timeLeft = 60f;
     }
 
     public void dispose() {

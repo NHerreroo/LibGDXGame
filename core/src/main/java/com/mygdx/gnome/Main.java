@@ -63,6 +63,7 @@ public class Main extends Game {
 
         assetManager.load("GNOME/TITLE.png", Texture.class);
         assetManager.load("GNOME/TOUCH.png", Texture.class);
+        assetManager.load("GNOME/gameover.png", Texture.class);
 
 
 
