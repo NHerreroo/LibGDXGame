@@ -17,22 +17,25 @@ public class HUD {
 
     private Player player;
 
-    public HUD(float width, float height, Player player, BitmapFont font) {
+    public HUD(float width, float height, Player player) {
         this.virtualWidth = width;
         this.virtualHeight = height;
         this.player = player;
-        this.font = font;
         this.timeLeft = 10f;
 
         hudCamera = new OrthographicCamera();
         hudViewport = new FillViewport(width, height, hudCamera);
         hudCamera.position.set(width / 2f, height / 2f, 0);
         hudCamera.update();
+
+        font = new BitmapFont();
+        font.getData().setScale(2f);
     }
 
     public float getTimeLeft() {
         return timeLeft;
     }
+
 
     public void update(float delta) {
         timeLeft -= delta;
@@ -61,6 +64,6 @@ public class HUD {
     }
 
     public void resetTimeLeft() {
-        timeLeft = 10f;
+        timeLeft = 10f; // O el valor inicial que desees
     }
 }
