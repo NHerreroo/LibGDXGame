@@ -14,7 +14,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 public class Main extends Game {
     SpriteBatch batch;
-    BitmapFont smallFont, bigFont;
+    BitmapFont smallFont, titleFont;
 
     AssetManager assetManager;
 
@@ -45,6 +45,13 @@ public class Main extends Game {
         assetManager.load("GNOME/Coin.png", Texture.class);
 
 
+        //HABILIADES
+        assetManager.load("GNOME/Coin.png", Texture.class);
+        assetManager.load("GNOME/HEART.png", Texture.class);
+        assetManager.load("GNOME/VELOCIDAD.png", Texture.class);
+        assetManager.load("GNOME/DAMAGE.png", Texture.class);
+        assetManager.load("GNOME/CADENCIA.png", Texture.class);
+
 
         assetManager.load("GNOME/Snail/1.png", Texture.class);
         assetManager.load("GNOME/Snail/damage.png", Texture.class);
@@ -56,12 +63,20 @@ public class Main extends Game {
         paramSmall.size = 24;
         smallFont = generator.generateFont(paramSmall);
 
-        FreeTypeFontGenerator.FreeTypeFontParameter paramBig = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        paramBig.size = 48;
-        bigFont = generator.generateFont(paramBig);
+        FreeTypeFontGenerator.FreeTypeFontParameter paramTitle = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        paramTitle.size = 32;
+        titleFont = generator.generateFont(paramTitle);
 
         generator.dispose();
 
         this.setScreen(new MainMenuScreen(this));
+    }
+
+    public BitmapFont getSmallFont() {
+        return smallFont;
+    }
+
+    public BitmapFont getTitleFont() {
+        return titleFont;
     }
 }

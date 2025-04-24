@@ -1,5 +1,6 @@
 package com.mygdx.gnome;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -17,7 +18,7 @@ public class HUD {
 
     private Player player;
 
-    public HUD(float width, float height, Player player) {
+    public HUD(float width, float height, Player player, BitmapFont gamefont) {
         this.virtualWidth = width;
         this.virtualHeight = height;
         this.player = player;
@@ -28,8 +29,7 @@ public class HUD {
         hudCamera.position.set(width / 2f, height / 2f, 0);
         hudCamera.update();
 
-        font = new BitmapFont();
-        font.getData().setScale(2f);
+        font = gamefont;
     }
 
     public float getTimeLeft() {

@@ -81,8 +81,8 @@ public class GameScreen implements Screen {
         hudCamera.update();
 
         player = new Player(playerTexture, virtualWidth / 2f, VIRTUAL_HEIGHT / 2f, this);
-        hud = new HUD(virtualWidth, VIRTUAL_HEIGHT, player);
-        tienda = new Tienda(virtualWidth, VIRTUAL_HEIGHT, player); // MODIFICADO
+        hud = new HUD(virtualWidth, VIRTUAL_HEIGHT, player, game.smallFont);
+        tienda = new Tienda(virtualWidth, VIRTUAL_HEIGHT, player, game.getSmallFont(), game.getTitleFont() );
         spawner = new Spawner(snailTexture, virtualWidth, VIRTUAL_HEIGHT);
         spawner.setRound(round);
     }
