@@ -42,24 +42,40 @@ public class Main extends Game {
         assetManager.load("GNOME/Snail/1.png", Texture.class);
         assetManager.load("GNOME/Snail/damage.png", Texture.class);
 
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(
-            Gdx.files.internal("GNOME/DynaPuff.ttf")
-        );
-        FreeTypeFontGenerator.FreeTypeFontParameter param =
-            new FreeTypeFontGenerator.FreeTypeFontParameter();
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("GNOME/DynaPuff.ttf"));
 
-        param.size = 24;
-        param.color = Color.WHITE;
-        smallFont = generator.generateFont(param);
 
-        param.size = 48;
-        param.color = Color.WHITE;
-        bigFont = generator.generateFont(param);
+        FreeTypeFontGenerator.FreeTypeFontParameter smallParam = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        smallParam.size = 8;
+        smallParam.color = Color.WHITE;
+        smallFont = generator.generateFont(smallParam);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter bigParam = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        bigParam.size = 16;
+        bigParam.color = Color.WHITE;
+        bigFont = generator.generateFont(bigParam);
 
         generator.dispose();
 
         assetManager.finishLoading();
+
         this.setScreen(new MainMenuScreen(this));
+    }
+
+    @Override
+    public void dispose() {
+        batch.dispose();
+        smallFont.dispose();
+        bigFont.dispose();
+        assetManager.dispose();
+    }
+
+    public SpriteBatch getBatch() {
+        return batch;
+    }
+
+    public AssetManager getAssetManager() {
+        return assetManager;
     }
 
     public BitmapFont getSmallFont() {
