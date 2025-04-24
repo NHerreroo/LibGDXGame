@@ -45,6 +45,10 @@ public class Main extends Game {
         assetManager.load("GNOME/Coin.png", Texture.class);
 
 
+        assetManager.load("GNOME/shop.png", Texture.class);
+        assetManager.load("GNOME/reroll.png", Texture.class);
+        assetManager.load("GNOME/siguiente.png", Texture.class);
+
         //HABILIADES
         assetManager.load("GNOME/Coin.png", Texture.class);
         assetManager.load("GNOME/HEART.png", Texture.class);
